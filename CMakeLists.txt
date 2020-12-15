@@ -65,7 +65,7 @@ target_include_directories(podfmt PUBLIC
 target_link_libraries( podfmt PUBLIC bsd )
 
 set(install_prefix "${CMAKE_INSTALL_PREFIX}")
-configure_file(src/libpodfmt.pc.in ${PROJECT_BINARY_DIR}/libpodfmt.pc @ONLY)
+configure_file(libpodfmt.pc.in ${PROJECT_BINARY_DIR}/libpodfmt.pc @ONLY)
 
 set(ENV{PKG_CONFIG_PATH} "${PROJECT_BINARY_DIR}:$ENV{PKG_CONFIG_PATH}")
 
