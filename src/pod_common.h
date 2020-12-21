@@ -43,7 +43,9 @@ typedef int8_t                               pod_char_t;
 typedef wchar_t                              pod_wchar_t;
 typedef pod_char_t*                          pod_string_t;
 typedef wchar_t*                             pod_wchar_string_t;
-typedef int32_t                              pod_time_t;
+typedef int32_t                              pod_time32_t;
+typedef int64_t                              pod_time64_t;
+typedef pod_time32_t                         pod_time_t;
 typedef pod_char_t*                          pod_path_t;
 typedef bool                                 pod_bool_t;
 #define POD_NUMBER_SIZE                      sizeof(pod_number_t)          /* length of a numerical entry    */
@@ -282,6 +284,8 @@ extern const char* pod_type_str(pod_ident_type_t type);
 extern FILE* pod_fopen_mkdir(pod_string_t path, char* mode);
 extern bool pod_rec_mkdir(pod_string_t path, char separator);
 extern bool pod_directory_create(pod_string_t path, char separator);
+
+/* system path functions */
 extern pod_path_t pod_path_system_home();
 extern pod_path_t pod_path_system_root();
 extern pod_char_t pod_path_system_drive();
@@ -290,6 +294,12 @@ extern pod_path_t pod_path_append_posix(pod_path_t a, pod_path_t b);
 extern pod_path_t pod_path_append_win32(pod_path_t a, pod_path_t b);
 extern bool pod_path_is_win32(pod_path_t path);
 extern bool pod_path_is_posix(pod_path_t path);
+
+/* time_t convert functions */
+extern time_t pod_time32_to_time(pod_time32_t t32);
+extern time_t pod_time64_to_time(pod_time64_t t64);
+extern pod_time32_t pod_time_to_time32(time_t t);
+extern pod_time64_t pod_time_to_time64(time_t t);
 
 extern const ssize_t POD_DIR_ENTRY_SIZE[POD_IDENT_TYPE_SIZE];
 extern const ssize_t POD_HEADER_SIZE[POD_IDENT_TYPE_SIZE];

@@ -61,15 +61,36 @@ pod_string_t pod_type_to_file_ext(int pod_type)
 	return NULL;
 }
 
+/* time_t convert functions */
+time_t pod_time32_to_time(pod_time32_t t32)
+{
+	return((time_t)t32);
+}
+
+time_t pod_time64_to_time(pod_time64_t t64)
+{
+	return((time_t)t64);
+}
+pod_time32_t pod_time_to_time32(time_t t)
+{
+	return((pod_time32_t)t);
+}
+
+pod_time64_t pod_time_to_time64(time_t t)
+{
+	return((pod_time64_t)t);
+}
+
 pod_string_t pod_ctime(pod_time_t* time32)
 {
-	time_t time = _time32_to_time(*time32);
+	time_t time = pod_time32_to_time(*time32);
 
 	char* str = ctime(&time);
 	str[strcspn(str, "\n")] = '\0';
 
 	return  str;
 }
+
 
 
 bool pod_rec_mkdir(pod_string_t path, char separator)
