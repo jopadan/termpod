@@ -292,6 +292,9 @@ extern pod_char_t pod_path_system_drive();
 extern pod_path_t pod_path_posix_to_win32(pod_path_t src, pod_char_t separator, pod_bool_t absolute, pod_char_t drive);
 extern pod_path_t pod_path_append_posix(pod_path_t a, pod_path_t b);
 extern pod_path_t pod_path_append_win32(pod_path_t a, pod_path_t b);
+extern pod_path_t pod_path_to_system(pod_path_t src, pod_bool_t absolute);
+extern pod_path_t pod_path_from_system(pod_path_t src);
+
 extern bool pod_path_is_win32(pod_path_t path);
 extern bool pod_path_is_posix(pod_path_t path);
 

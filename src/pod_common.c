@@ -159,7 +159,7 @@ pod_path_t pod_path_system_root()
 pod_char_t pod_path_system_drive()
 {
 #if defined(__WIN32__) || defined(__WIN64__)
-	return (WIN32 || WIN64 ) ? *getenv("SYSTEMDRIVE");
+	return *getenv("SYSTEMDRIVE");
 #else
 	return '/';
 #endif
@@ -200,6 +200,9 @@ pod_path_t pod_path_posix_to_win32(pod_path_t src, pod_char_t separator, pod_boo
 
 	return &path[0];
 }
+
+extern pod_path_t pod_path_to_system(pod_path_t src, pod_bool_t absolute);
+extern pod_path_t pod_path_from_system(pod_path_t src);
 
 bool pod_path_is_posix(pod_path_t path)
 {
