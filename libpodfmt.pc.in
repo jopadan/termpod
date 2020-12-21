@@ -1,6 +1,6 @@
 prefix=@install_prefix@
 exe_prefix=${prefix}
-libdir=${prefix}/lib
+libdir=${prefix}/@install_libdir@
 includedir=${prefix}/include
 
 Name: libpodfmt
