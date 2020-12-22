@@ -318,19 +318,33 @@ bool pod_file_pod2_write(pod_file_pod2_t* pod_file, pod_string_t filename)
 
 /* Extract POD2 file pod_file to directory dst                       */
 /* @returns true on success otherwise false and leaves errno         */
-bool pod_file_pod2_extract(pod_file_pod2_t* pod_file, pod_string_t dst)
+bool pod_file_pod2_extract(pod_file_pod2_t* pod_file, pod_string_t dst, pod_bool_t absolute)
 {
 	if(pod_file == NULL)
 	{
 		fprintf(stderr, "ERROR: pod_file_pod2_extract(pod_file == NULL)\n");
 		return false;
 	}
+
 	if(dst == NULL) { dst = ""; }
-	/* create and change to destination directory */
-	else if(!pod_directory_create(dst, '/')) { fprintf(stderr, "pod_directory_create(%s) = %s\n", dst, strerror(errno)); return false; }
-	pod_char_t cwd[1024];
+
+	pod_char_t cwd[POD_SYSTEM_PATH_SIZE];
 	getcwd(cwd, sizeof(cwd));
-	chdir(dst);
+	pod_path_t path = absolute ? strdup(dst) : pod_path_append_posix(cwd, dst);
+
+	/* create and change to destination directory */
+	if(!pod_directory_create(path, '/'))
+	{
+		fprintf(stderr, "pod_directory_create(%s, %c) = %s\n", dst, '/', strerror(errno));
+		return false;
+	}
+
+	if(chdir(path) != 0)
+	{
+		fprintf(stderr, "chdir(%s) = %s\n", path, strerror(errno));
+		return false;
+	}
+
 	/* extract entries */
 	for(int i = 0; i < pod_file->header->file_count; i++)
 	{

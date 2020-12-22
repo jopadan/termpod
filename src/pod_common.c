@@ -122,12 +122,10 @@ bool pod_directory_create(pod_string_t path, char separator)
 		return false;
 
 	pod_char_t *sep = strrchr(path, separator);
-
-	if(sep == NULL)
-		return false;
-
 	pod_char_t *path0 = strdup(path);
-	path0[sep - path ] = POD_PATH_NULL;
+
+	if(sep != NULL)
+		path0[sep - path] = POD_PATH_NULL;
 
 	bool ret = pod_rec_mkdir(path0, separator);
        	free(path0);
@@ -201,7 +199,29 @@ pod_path_t pod_path_posix_to_win32(pod_path_t src, pod_char_t separator, pod_boo
 	return &path[0];
 }
 
+extern pod_path_t pod_path_trim(pod_path_t src)
+{
+	pod_path_t dst = strdup(src);
+	pod_path_t sep = strrchr(dst, '.');
+	*sep = '\0';
+
+	dst = reallocarray(dst, dst + strlen(src) + 1 - sep, POD_CHAR_SIZE);
+	return dst;
+}
+
 extern pod_path_t pod_path_to_system(pod_path_t src, pod_bool_t absolute);
+/*
+{
+	if(src == NULL)
+		return NULL;
+
+	pod_char_t root = pod_path_system_drive();
+	absolute = (src[0] == root) ? true : absolute;
+
+	pod_number_t start = absolute ? (src[0] == root ? 2 : 3 : 0;
+	return path;
+}
+*/
 extern pod_path_t pod_path_from_system(pod_path_t src);
 
 bool pod_path_is_posix(pod_path_t path)
@@ -293,12 +313,19 @@ pod_path_t pod_path_append_posix(pod_path_t a, pod_path_t b)
 FILE* pod_fopen_mkdir(pod_string_t path, char* mode)
 {
 	if(path == NULL) { return NULL; }
-		pod_char_t *sep = strrchr(path, POD_PATH_SEPARATOR);
+	pod_char_t *sep = strrchr(path, POD_PATH_SEPARATOR);
+	pod_char_t *path0 = strdup(path);
+	pod_char_t *file = sep ? sep + 1 : path0;
 	if(sep) {
-		pod_char_t *path0 = strdup(path);
 		path0[ sep - path ] = POD_PATH_NULL;
 		pod_rec_mkdir(path0, POD_PATH_SEPARATOR);
-		free(path0);
 	}
-	return fopen(path, mode);
+	char cwd[POD_SYSTEM_PATH_SIZE];
+	if(getcwd(cwd, POD_SYSTEM_PATH_SIZE) == NULL )
+		return NULL;
+	chdir(path0);
+	FILE* dst = fopen(file, mode);
+	chdir(cwd);
+	free(path0);
+	return dst;
 }
