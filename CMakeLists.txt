@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-project(podorgana LANGUAGES C)
+project(podfmt LANGUAGES C)
 
 set(PROJECT_VERSION 1.0)
 set(PROJECT_DESCRIPTION POD game archive format library written in C for all existing versions)
@@ -37,15 +37,15 @@ set(EXAMPLE_SOURCE_FILES
 )
 
 # libpodfmt library
-add_library( podfmt SHARED ${SOURCE_FILES} ${INCLUDE_FILES} )
-target_include_directories(podfmt PUBLIC
+add_library( ${PROJECT_NAME} SHARED ${SOURCE_FILES} ${INCLUDE_FILES} )
+target_include_directories(${PROJECT_NAME} PUBLIC
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
-			$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/libpodfmt>
+			$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/lib${PROJECT_NAME}>
 			)
 
 set(install_prefix "${CMAKE_INSTALL_PREFIX}")
 set(install_libdir "${CMAKE_INSTALL_LIBDIR}")
-configure_file(libpodfmt.pc.in ${PROJECT_BINARY_DIR}/libpodfmt.pc @ONLY)
+configure_file(lib${PROJECT_NAME}.pc.in ${PROJECT_BINARY_DIR}/lib${PROJECT_NAME}.pc @ONLY)
 
 set(ENV{PKG_CONFIG_PATH} "${PROJECT_BINARY_DIR}:$ENV{PKG_CONFIG_PATH}")
 
@@ -53,9 +53,10 @@ install(TARGETS podfmt EXPORT ${PROJECT_NAME}Config
 	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-	PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/libpodfmt
+	PUBLIC_HEADER DESTINATION
+	${CMAKE_INSTALL_INCLUDEDIR}/lib${PROJECT_NAME}
 	)
 
 install(FILES ${INCLUDE_FILES} DESTINATION
-	${CMAKE_INSTALL_INCLUDEDIR}/libpodfmt/)
-install(FILES libpodfmt.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig/)
+	${CMAKE_INSTALL_INCLUDEDIR}/lib${PROJECT_NAME}/)
+install(FILES lib${PROJECT_NAME}.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig/)
