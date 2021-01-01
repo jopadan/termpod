@@ -326,16 +326,42 @@ bool pod_file_pod2_extract(pod_file_pod2_t* pod_file, pod_string_t dst, pod_bool
 		return false;
 	}
 
-	if(dst == NULL) { dst = ""; }
+	if(dst == NULL) { dst = "./"; }
 
 	pod_char_t cwd[POD_SYSTEM_PATH_SIZE];
 	getcwd(cwd, sizeof(cwd));
-	pod_path_t path = absolute ? strdup(dst) : pod_path_append_posix(cwd, dst);
+	printf("cwd: %s\n",cwd);
+	pod_path_t root = pod_path_system_root();
 
+	printf("root: %s\n",root);
+	pod_path_t path = NULL;
+
+	if(absolute)
+	{
+		path = pod_path_append_posix(root, dst);
+		if(!path)
+		{
+			fprintf(stderr, "ERROR: pod_path_append_posix(%s,%s)\n", root, dst);
+			free(root);
+			return false;
+		}
+	}
+	else
+	{
+		path = pod_path_append_posix(cwd, dst);
+		if(!path)
+		{
+			fprintf(stderr, "ERROR: pod_path_append_posix(%s,%s)\n", cwd, dst);
+			free(root);
+			return false;
+		}
+	}
+
+	printf("path: %s\n", path);
 	/* create and change to destination directory */
 	if(!pod_directory_create(path, '/'))
 	{
-		fprintf(stderr, "pod_directory_create(%s, %c) = %s\n", dst, '/', strerror(errno));
+		fprintf(stderr, "pod_directory_create(\"%s\", \'%c\') = %s\n", dst, '/', strerror(errno));
 		return false;
 	}
 

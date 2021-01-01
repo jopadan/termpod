@@ -95,24 +95,42 @@ pod_string_t pod_ctime(pod_time_t* time32)
 
 bool pod_rec_mkdir(pod_string_t path, char separator)
 {
-	pod_char_t *sep = strrchr(path, POD_PATH_SEPARATOR);
-	if(sep != NULL)
+	if(path == NULL)
+	{
+		fprintf(stderr, "ERROR: pod_rec_mkdir(\"%s\", \'%c\') directory path equals NULL!\n", path, separator);
+		return false;
+	}
+
+	if(strcmp(path, "") == 0)
+	{
+		fprintf(stderr, "ERROR: pod_rec_mkdir(\"%s\", \'%c\') trying to create empty directory!\n", path, separator);
+		return false;
+	}
+
+	pod_path_t dst = strdup(path);
+	pod_char_t *sep = strrchr(dst, separator);
+
+	ssize_t i = sep - dst;
+	if(sep != NULL && i > 0)
 	{
 		*sep = '\0';
-		if(!pod_rec_mkdir(path, separator))
+		fprintf(stdout,"dst: %s\n", dst);
+		if(!pod_rec_mkdir(dst, separator))
 		{
 			*sep = separator;
-			fprintf(stderr,"ERROR: pod_rec_mkdir(%s) failed: %s\n", path, strerror(errno));
 			return false;
 		}
 		*sep = separator;
 	}
 
-	if(mkdir(path, ACCESSPERMS) && errno != EEXIST)
+	if(mkdir(dst, ACCESSPERMS) != 0 && errno != EEXIST && errno != 0)
 	{
-		fprintf(stderr,"ERROR: mkdir(%s): %s\n", path, strerror(errno));
+		fprintf(stderr,"ERROR: mkdir(\"%s\") failed with errno: %s\n", dst, strerror(errno));
 		return false;
 	}
+
+	fprintf(stdout, "INFO: Created directory: \"%s\"\n", dst);
+
 	return true;
 }
 
@@ -121,15 +139,25 @@ bool pod_directory_create(pod_string_t path, char separator)
 	if(path == NULL)
 		return false;
 
+	if(strcmp(path, "") == 0)
+	{
+		fprintf(stderr, "ERROR: pod_directory_create(\"%s\", \'%c\'): trying to create an empty directory!\n", path, separator);
+		return false;
+	}
 	pod_char_t *sep = strrchr(path, separator);
 	pod_char_t *path0 = strdup(path);
 
 	if(sep != NULL)
 		path0[sep - path] = POD_PATH_NULL;
 
-	bool ret = pod_rec_mkdir(path0, separator);
+	if(strcmp(path0, "") == 0)
+	{
+		fprintf(stderr, "ERROR: pod_directory_create(\"%s\", \'%c\') trying to create empty directory!\n", path0, separator);
+		return false;
+	}
+	bool res = pod_rec_mkdir(path0, separator);
        	free(path0);
-	return ret;
+	return res;
 }
 
 pod_path_t pod_path_system_home()
@@ -209,20 +237,39 @@ extern pod_path_t pod_path_trim(pod_path_t src)
 	return dst;
 }
 
-extern pod_path_t pod_path_to_system(pod_path_t src, pod_bool_t absolute);
-/*
+extern pod_path_t pod_path_to_win32(pod_path_t src, pod_bool_t absolute)
+
 {
-	if(src == NULL)
+	if(src == NULL || pod_path_is_pod(src) == false)
 		return NULL;
 
+	pod_path_t dst = calloc(strlen(src) + 4, POD_CHAR_SIZE);
+
 	pod_char_t root = pod_path_system_drive();
+	dst[0] = root;
+	dst[1] = ':';
+	dst[2] = '\\';
+	
+
 	absolute = (src[0] == root) ? true : absolute;
 
-	pod_number_t start = absolute ? (src[0] == root ? 2 : 3 : 0;
-	return path;
+	return dst;
 }
-*/
-extern pod_path_t pod_path_from_system(pod_path_t src);
+
+extern pod_path_t pod_path_to_posix(pod_path_t src)
+{
+	if(src == NULL || pod_path_is_pod(src) == false)
+		return NULL;
+
+	pod_path_t dst = strdup(src);
+	for(int i = 0; i < strlen(src); i++)
+	{
+		if(dst[i] == '\\')
+			dst[i] = '/';
+	}
+
+	return dst;
+}
 
 bool pod_path_is_posix(pod_path_t path)
 {
@@ -237,6 +284,23 @@ bool pod_path_is_posix(pod_path_t path)
 	return true;
 }
 
+bool pod_path_is_pod(pod_path_t path)
+{
+	if(path == NULL)
+		return false;
+
+	for(int i = 0; i < strlen(path); i++)
+	{
+		if(path[i] == POD_PATH_SEPARATOR)
+			continue;
+		if(isprint(path[i]) != 0)
+			continue;
+
+		return false;
+	}
+
+	return true;
+}
 
 bool pod_path_is_win32(pod_path_t path)
 {
@@ -312,12 +376,18 @@ pod_path_t pod_path_append_posix(pod_path_t a, pod_path_t b)
 
 FILE* pod_fopen_mkdir(pod_string_t path, char* mode)
 {
-	if(path == NULL) { return NULL; }
+	if(path == NULL || strcmp(path, "") == 0)
+	{
+		fprintf(stderr,"ERROR: pod_fopen_mkdir(\"%s\", \"%s\"): path is NULL or empty!\n", path, mode);
+		return NULL;
+	}
+
 	pod_char_t *sep = strrchr(path, POD_PATH_SEPARATOR);
 	pod_char_t *path0 = strdup(path);
 	pod_char_t *file = sep ? sep + 1 : path0;
 	if(sep) {
 		path0[ sep - path ] = POD_PATH_NULL;
+		fprintf(stdout,"INFO: pod_fopen_mkdir(\"%s\", \"%s\"): calling pod_rec_mkdir \n", path0, mode);
 		pod_rec_mkdir(path0, POD_PATH_SEPARATOR);
 	}
 	char cwd[POD_SYSTEM_PATH_SIZE];
