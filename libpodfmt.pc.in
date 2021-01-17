@@ -3,7 +3,7 @@ exe_prefix=${prefix}
 libdir=${prefix}/@install_libdir@
 includedir=${prefix}/@install_includedir@
 
-Name: @PROJECT_NAME@
+Name: lib@PROJECT_NAME@
 Description: @PROJECT_DESCRIPTION@
 Version: @PROJECT_VERSION@
 

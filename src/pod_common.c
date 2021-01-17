@@ -91,74 +91,174 @@ pod_string_t pod_ctime(pod_time_t* time32)
 	return  str;
 }
 
-
-
-bool pod_rec_mkdir(pod_string_t path, char separator)
+pod_dir_t pod_opendir_mkdir_p(const pod_string_t path, mode_t* mode)
 {
+	/* assert valid arguments */
 	if(path == NULL)
 	{
-		fprintf(stderr, "ERROR: pod_rec_mkdir(\"%s\", \'%c\') directory path equals NULL!\n", path, separator);
-		return false;
+		fprintf(stderr, "ERROR: pod_opendir_mkdir_p(NULL, \'%u\'): path == NULL!\n", *mode);
+		return NULL;
 	}
 
 	if(strcmp(path, "") == 0)
 	{
-		fprintf(stderr, "ERROR: pod_rec_mkdir(\"%s\", \'%c\') trying to create empty directory!\n", path, separator);
-		return false;
+		fprintf(stderr, "ERROR: pod_opendir_mkdir_p(\"%s\", \'%u\'): trying to create an empty directory!\n", path, *mode);
+		return NULL;
 	}
 
-	pod_path_t dst = strdup(path);
-	pod_char_t *sep = strrchr(dst, separator);
-
-	ssize_t i = sep - dst;
-	if(sep != NULL && i > 0)
+	/* create directory with parents */
+	if(mkdir_p(path, ACCESSPERMS) != 0 && errno != EEXIST && errno != 0)
 	{
-		*sep = '\0';
-		fprintf(stdout,"dst: %s\n", dst);
-		if(!pod_rec_mkdir(dst, separator))
-		{
-			*sep = separator;
-			return false;
-		}
-		*sep = separator;
+		fprintf(stderr,"ERROR: mkdir_p(\"%s\", ACCESSPERMS) failed with errno: %s\n", path, strerror(errno));
+		return NULL;
 	}
 
-	if(mkdir(dst, ACCESSPERMS) != 0 && errno != EEXIST && errno != 0)
+	/* canonicalize_file_name */
+	pod_path_t dir = realpath(path, NULL);
+	if(dir == NULL)
 	{
-		fprintf(stderr,"ERROR: mkdir(\"%s\") failed with errno: %s\n", dst, strerror(errno));
-		return false;
+		fprintf(stderr, "ERROR: realpath(\"%s\", NULL) failed with errno %s\n", path, strerror(errno));
+		return NULL;
 	}
 
-	fprintf(stdout, "INFO: Created directory: \"%s\"\n", dst);
+	/* open canoncicalized_file_name as directory */
+       	pod_dir_t dst = opendir(dir);
+	if(dst == NULL)
+		fprintf(stderr,"ERROR: opendir(\"%s\") failed with errno %s\n", dir, strerror(errno));
 
-	return true;
+	/* cleanup and return directory */
+	free(dir);
+	return dst;
 }
 
-bool pod_directory_create(pod_string_t path, char separator)
+pod_file_t pod_fopen_mkdir_p(pod_path_t path, const char* mode)
 {
+	/* assert valid arguments */
 	if(path == NULL)
-		return false;
+	{
+		fprintf(stderr, "ERROR: pod_fopen_mkdir_p(NULL, %s): path == NULL!\n", mode);
+		return NULL;
+	}
+
+	if(strcmp(path,"") == 0)
+	{
+		fprintf(stderr, "ERROR: pod_fopen_mkdir_p(\"%s\", %s): trying to open an empty path!\n", path, mode);
+		return NULL;
+	}
+
+	/* split path into dirname/filename */
+	pod_path_t dir = dirname(path);
+	pod_path_t file = basename(path);
+
+	/* create recursive directory with parents */
+	if(!mkdir_p(dir, ACCESSPERMS))
+	{
+		fprintf(stderr,"ERROR: creating recursive directory %s failed with errno %s\n", dir, strerror(errno));
+		free(dir);
+		free(file);
+		return NULL;
+	}
+
+	/* canonicalize_file_name of created path */
+	pod_char_t *norm = realpath(dir, NULL);
+	norm = reallocarray(norm, sizeof(dir) + sizeof(file), POD_CHAR_SIZE);
+
+	/* add separator if necessary */
+	if(norm[strlen(dir) - 1] != '/')
+	{
+		norm[strlen(dir)] = '/';
+		norm[strlen(dir)+1] = '\0';
+	}
+
+	/* concatenate canonicalized directory name and filename */
+	norm = strncat(norm, file, strlen(file));
+
+	/* open canonicalized filepath */
+	FILE* dst = fopen(norm, mode);
+
+	/* cleanup and return file */
+	free(norm);
+	free(dir);
+	free(file);
+	return dst;
+}
+
+#ifdef __USE_ATFILE
+pod_dir_t pod_opendir_mkdirat_p(int fd, pod_string_t path, const mode_t* mode)
+{
+	/* assert valid arguments */
+	if(path == NULL)
+	{
+		fprintf(stderr, "ERROR: pod_opendir_mkdirat_p(%d, NULL, \'%u\'): path == NULL!\n", fd, *mode);
+		return NULL;
+	}
 
 	if(strcmp(path, "") == 0)
 	{
-		fprintf(stderr, "ERROR: pod_directory_create(\"%s\", \'%c\'): trying to create an empty directory!\n", path, separator);
-		return false;
+		fprintf(stderr, "ERROR: pod_opendir_mkdirat_p(%d, \"%s\", \'%u\'): trying to create an empty directory!\n", fd, path, *mode);
+		return NULL;
 	}
-	pod_char_t *sep = strrchr(path, separator);
-	pod_char_t *path0 = strdup(path);
 
-	if(sep != NULL)
-		path0[sep - path] = POD_PATH_NULL;
-
-	if(strcmp(path0, "") == 0)
+	/* create directory with parents */
+	if(mkdirat_p(fd, path, ACCESSPERMS) != 0 && errno != EEXIST && errno != 0)
 	{
-		fprintf(stderr, "ERROR: pod_directory_create(\"%s\", \'%c\') trying to create empty directory!\n", path0, separator);
-		return false;
+		fprintf(stderr,"ERROR: mkdirat_p(%d, \"%s\", ACCESSPERMS) failed with errno: %s\n", fd, path, strerror(errno));
+		return NULL;
 	}
-	bool res = pod_rec_mkdir(path0, separator);
-       	free(path0);
-	return res;
+
+	/* canonicalize_file_name */
+	pod_path_t dir = realpath(path, NULL);
+	if(dir == NULL)
+	{
+		fprintf(stderr, "ERROR: realpath(\"%s\", NULL) failed with errno %s\n", path, strerror(errno));
+		return NULL;
+	}
+
+	/* open canoncicalized_file_name as directory */
+       	pod_dir_t dst = opendir(dir);
+	if(dst == NULL)
+		fprintf(stderr,"ERROR: opendir(\"%s\") failed with errno %s\n", dir, strerror(errno));
+
+	/* cleanup and return directory */
+	free(dir);
+	return dst;
 }
+
+pod_file_t pod_fopen_mkdirat_p(int fd, pod_path_t path, mode_t mode)
+{
+	/* assert valid arguments */
+	if(path == NULL)
+	{
+		fprintf(stderr, "ERROR: pod_fopen_mkdir_p(NULL, ACCESSPERMS): path == NULL!\n", path);
+		return NULL;
+	}
+
+	if(strcmp(path,"") == 0)
+	{
+		fprintf(stderr, "ERROR: pod_fopen_mkdir_p(\"%s\", ACCESSPERMS) trying to open an empty path!\n", path);
+		return NULL;
+	}
+
+	pod_path_t dir = dirname(path);
+	pod_path_t file = basename(path);
+
+	if(mkdirat_p(fd, dir, ACCESSPERMS))
+	{
+		fprintf(stderr,"ERROR: creating recursive directory %s failed with errno %s\n", path, strerror(errno));
+		return NULL;
+	}
+
+	/* canonicalize_file_name needs existing path */
+	pod_char_t *norm = realpath(dir, NULL);
+	norm = reallocarray(norm, sizeof(dir) + sizeof(file), POD_CHAR_SIZE);
+	norm = strncat(norm, file, sizeof(file));
+
+	FILE* dst = fopen(norm, "a+");
+	free(norm);
+	free(dir);
+	return dst;
+}
+#endif
 
 pod_path_t pod_path_system_home()
 {
@@ -374,28 +474,3 @@ pod_path_t pod_path_append_posix(pod_path_t a, pod_path_t b)
 	return path;
 }
 
-FILE* pod_fopen_mkdir(pod_string_t path, char* mode)
-{
-	if(path == NULL || strcmp(path, "") == 0)
-	{
-		fprintf(stderr,"ERROR: pod_fopen_mkdir(\"%s\", \"%s\"): path is NULL or empty!\n", path, mode);
-		return NULL;
-	}
-
-	pod_char_t *sep = strrchr(path, POD_PATH_SEPARATOR);
-	pod_char_t *path0 = strdup(path);
-	pod_char_t *file = sep ? sep + 1 : path0;
-	if(sep) {
-		path0[ sep - path ] = POD_PATH_NULL;
-		fprintf(stdout,"INFO: pod_fopen_mkdir(\"%s\", \"%s\"): calling pod_rec_mkdir \n", path0, mode);
-		pod_rec_mkdir(path0, POD_PATH_SEPARATOR);
-	}
-	char cwd[POD_SYSTEM_PATH_SIZE];
-	if(getcwd(cwd, POD_SYSTEM_PATH_SIZE) == NULL )
-		return NULL;
-	chdir(path0);
-	FILE* dst = fopen(file, mode);
-	chdir(cwd);
-	free(path0);
-	return dst;
-}

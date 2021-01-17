@@ -10,7 +10,7 @@ uint32_t pod_crc(pod_byte_t* data, pod_size_t count)
 		fprintf(stderr, "ERROR: pod_crc() data == NULL or count == 0!");
 		return 0;
 	}
-	return ccitt32_updcrc(0xFFFFFFFF, data, count);
+	return crc_ccitt32_ffffffff(data, count);
 }
 
 uint32_t pod_crc_pod2(pod_file_pod2_t* file)
@@ -21,7 +21,7 @@ uint32_t pod_crc_pod2(pod_file_pod2_t* file)
 		return 0;
 	}
 
-	return ccitt32_updcrc(0xFFFFFFFF, file->data + POD_IDENT_SIZE + POD_HEADER_CHECKSUM_SIZE, file->size - POD_IDENT_SIZE - POD_HEADER_CHECKSUM_SIZE);
+	return crc_ccitt32_ffffffff(file->data + POD_IDENT_SIZE + POD_HEADER_CHECKSUM_SIZE, file->size - POD_IDENT_SIZE - POD_HEADER_CHECKSUM_SIZE);
 }
 
 uint32_t pod_crc_pod2_entry(pod_file_pod2_t* file, pod_number_t entry_index)
@@ -32,7 +32,7 @@ uint32_t pod_crc_pod2_entry(pod_file_pod2_t* file, pod_number_t entry_index)
 		return 0;
 	}
 
-	return ccitt32_updcrc(0xFFFFFFFF, file->data + file->entries[entry_index].offset, file->entries[entry_index].size);
+	return crc_ccitt32_ffffffff(file->data + file->entries[entry_index].offset, file->entries[entry_index].size);
 }
  
 
@@ -359,9 +359,9 @@ bool pod_file_pod2_extract(pod_file_pod2_t* pod_file, pod_string_t dst, pod_bool
 
 	printf("path: %s\n", path);
 	/* create and change to destination directory */
-	if(!pod_directory_create(path, '/'))
+	if(mkdir_p(path, ACCESSPERMS) != 0)
 	{
-		fprintf(stderr, "pod_directory_create(\"%s\", \'%c\') = %s\n", dst, '/', strerror(errno));
+		fprintf(stderr, "mkdir_p(\"%s\", \'%c\') = %s\n", dst, '/', strerror(errno));
 		return false;
 	}
 

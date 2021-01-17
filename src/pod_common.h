@@ -29,25 +29,50 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/stat.h>
-#include "ccitt32_crc.h"
 #include <ctype.h>
-#include <bsd/timeconv.h>
+#include <dirent.h>
+//#include <bsd/timeconv.h>
+
+/* libcrc - CRC-CCITT32 checksum algorithm include */
+#include "libcrc/checksum.h"
+/* recursive mkdir_p with parents */
+#include "mkdir_p.h"
 
 /* main variable type sizes of POD file formats                                                            */
-typedef uint32_t                             pod_number_t;
+/* integer types */
+typedef uint64_t                             pod_number64_t;
+typedef uint32_t                             pod_number32_t;
+typedef uint16_t                             pod_number16_t;
+typedef pod_number32_t                       pod_number_t;
+typedef uint8_t                              pod_byte_t;
+typedef uint16_t                             pod_word_t;
+typedef uint32_t                             pod_double_word_t;
+typedef uint64_t                             pod_quad_word_t;
+/* floating and fixed point types */
+typedef float                                pod_float32_t;
+typedef double                               pod_float64_t;
+typedef uint16_t                             pod_fixed16_t;
+typedef uint32_t                             pod_fixed32_t;
+/* boolean types */
+typedef bool                                 pod_bool_t;
+/* size and file offset types */
 typedef size_t                               pod_size_t;
 typedef ssize_t                              pod_ssize_t;
+typedef fpos_t                               pod_fpos_t;
 typedef off_t                                pod_off_t;
-typedef uint8_t                              pod_byte_t;
+/* character and string types */
 typedef int8_t                               pod_char_t;
 typedef wchar_t                              pod_wchar_t;
 typedef pod_char_t*                          pod_string_t;
 typedef wchar_t*                             pod_wchar_string_t;
+/* time types */
 typedef int32_t                              pod_time32_t;
 typedef int64_t                              pod_time64_t;
 typedef pod_time32_t                         pod_time_t;
+/* file handle types */
 typedef pod_char_t*                          pod_path_t;
-typedef bool                                 pod_bool_t;
+typedef DIR*                                 pod_dir_t;
+typedef FILE*                                pod_file_t;
 #define POD_NUMBER_SIZE                      sizeof(pod_number_t)          /* length of a numerical entry    */
 #define POD_BYTE_SIZE                        sizeof(pod_byte_t)            /* length of a byte entry         */
 #define POD_CHAR_SIZE                        sizeof(pod_char_t)            /* length of a character entry    */
@@ -281,9 +306,13 @@ extern pod_ident_type_t pod_type(char* ident);
 extern bool is_pod(char* ident);
 extern pod_string_t pod_type_to_file_ext(int pod_type);
 extern const char* pod_type_str(pod_ident_type_t type);
-extern FILE* pod_fopen_mkdir(pod_string_t path, char* mode);
-extern bool pod_rec_mkdir(pod_string_t path, char separator);
-extern bool pod_directory_create(pod_string_t path, char separator);
+
+/* create absolute/relative recursive directories */
+extern int mkdir_p(const char* pathname, mode_t mode);
+#ifdef __USE_ATFILE
+extern int mkdirat_p(int fd, const char* pathname, const mode_t mode);
+
+#endif
 
 /* system path functions */
 extern pod_path_t pod_path_system_home();

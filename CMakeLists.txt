@@ -9,6 +9,7 @@ include(FindPkgConfig)
 
 set(SOURCE_FILES
 	src/ccitt32_crc.c
+	src/mkdir_p.c
 	src/libpodfmt.c
 	src/pod_common.c
 	src/pod1.c
@@ -22,6 +23,7 @@ set(SOURCE_FILES
 
 set(INCLUDE_FILES
 	src/ccitt32_crc.h
+	src/mkdir_p.h
 	src/libpodfmt.h
 	src/pod_common.h
 	src/pod1.h
@@ -35,6 +37,8 @@ set(INCLUDE_FILES
 
 set(EXAMPLE_SOURCE_FILES
 )
+
+pkg_search_module(CRC REQUIRED libcrc)
 
 # libpodfmt library
 add_library( ${PROJECT_NAME} SHARED ${SOURCE_FILES} ${INCLUDE_FILES} )
