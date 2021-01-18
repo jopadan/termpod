@@ -8,7 +8,7 @@ include(GNUInstallDirs)
 include(FindPkgConfig)
 
 set(SOURCE_FILES
-	src/ccitt32_crc.c
+	src/path.c
 	src/mkdir_p.c
 	src/libpodfmt.c
 	src/pod_common.c
@@ -22,7 +22,7 @@ set(SOURCE_FILES
 )
 
 set(INCLUDE_FILES
-	src/ccitt32_crc.h
+	src/path.h
 	src/mkdir_p.h
 	src/libpodfmt.h
 	src/pod_common.h
@@ -41,11 +41,15 @@ set(EXAMPLE_SOURCE_FILES
 pkg_search_module(CRC REQUIRED libcrc)
 
 # libpodfmt library
-add_library( ${PROJECT_NAME} SHARED ${SOURCE_FILES} ${INCLUDE_FILES} )
-target_include_directories(${PROJECT_NAME} PUBLIC
+add_library( ${PROJECT_NAME} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}
+	${CRC_INCLUDE})
+target_compile_options( ${PROJECT_NAME} PUBLIC ${CRC_CFLAGS} )
+target_include_directories(${PROJECT_NAME} PUBLIC ${CRC_INCLUDEDIR} 
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
 			$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/lib${PROJECT_NAME}>
 			)
+target_include_directories( ${PROJECT_NAME} PUBLIC ${CRC_INCLUDEDIR} )
+target_link_libraries( ${PROJECT_NAME} PUBLIC ${CRC_LIBRARIES} )
 
 set(install_prefix "${CMAKE_INSTALL_PREFIX}")
 set(install_libdir "${CMAKE_INSTALL_LIBDIR}")
