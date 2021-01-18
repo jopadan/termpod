@@ -16,8 +16,8 @@ typedef struct pod_header_pod4_s
 	pod_number_t index_offset;
 	pod_number_t unknown10c;
 	pod_number_t size_index;
-	pod_number_t unknown114;
-	pod_number_t unknown118;
+	pod_number_t number_min; /* 0x00000000 */
+	pod_number_t number_max; /* 0xFFFFFFFF */
 	pod_number_t unknown11C;
 } pod_header_pod4_t;
 
