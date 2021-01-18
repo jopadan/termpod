@@ -47,9 +47,9 @@ typedef struct pod_audit_entry_pod3_s
 typedef struct pod_file_pod3_s
 {
 	pod_header_pod3_t* header;
+	pod_byte_t* entry_data;
 	pod_entry_pod3_t* entries; /* header.file_count */
 	pod_char_t* path_data;
-	pod_byte_t* entry_data;
 	pod_audit_entry_pod3_t* audit_trail; /* header.audit_file_count */
 	/* not serialized content */
 	pod_size_t path_data_size;
