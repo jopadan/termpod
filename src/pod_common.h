@@ -31,7 +31,6 @@
 #include <sys/stat.h>
 #include <ctype.h>
 #include <dirent.h>
-//#include <bsd/timeconv.h>
 
 /* libcrc - CRC-CCITT32 checksum algorithm include */
 #include "libcrc/checksum.h"
