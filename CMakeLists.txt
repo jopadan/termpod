@@ -38,18 +38,18 @@ set(INCLUDE_FILES
 set(EXAMPLE_SOURCE_FILES
 )
 
+pkg_search_module(ZIP REQUIRED libzip)
 pkg_search_module(CRC REQUIRED libcrc)
 
 # libpodfmt library
 add_library( ${PROJECT_NAME} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}
-	${CRC_INCLUDE})
-target_compile_options( ${PROJECT_NAME} PUBLIC ${CRC_CFLAGS} )
-target_include_directories(${PROJECT_NAME} PUBLIC ${CRC_INCLUDEDIR} 
+	${CRC_INCLUDE} ${ZIP_INCLUDE})
+target_compile_options( ${PROJECT_NAME} PUBLIC ${CRC_CFLAGS} ${ZIP_CFLAGS})
+target_include_directories(${PROJECT_NAME} PUBLIC ${CRC_INCLUDEDIR} ${ZIP_INCLUDEDIR}
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
 			$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/lib${PROJECT_NAME}>
 			)
-target_include_directories( ${PROJECT_NAME} PUBLIC ${CRC_INCLUDEDIR} )
-target_link_libraries( ${PROJECT_NAME} PUBLIC ${CRC_LIBRARIES} )
+		target_link_libraries( ${PROJECT_NAME} PUBLIC ${CRC_LIBRARIES} ${ZIP_LIBRARIES} )
 
 set(install_prefix "${CMAKE_INSTALL_PREFIX}")
 set(install_libdir "${CMAKE_INSTALL_LIBDIR}")

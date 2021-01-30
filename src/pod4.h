@@ -32,6 +32,26 @@ typedef struct pod4_entry_s {
 	pod_number_t checksum;
 } pod4_entry_t;
 
+/* POD4 file data structure */
+typedef struct pod_file_pod4_s
+{
+	pod_header_pod4_t* header;
+	pod_byte_t* entry_data;
+	pod_entry_pod4_t* entries; /* header.file_count */
+	pod_char_t* path_data;
+	pod_audit_entry_pod4_t* audit_trail; /* header.audit_file_count */
+	/* not serialized content */
+	pod_size_t path_data_size;
+	pod_size_t entry_data_size;
+	pod_size_t audit_data_size;
+	pod_string_t filename;
+	pod_size_t size;
+	pod_number_t checksum;
+	pod_byte_t* data;
+	pod_zip_entry_pod4_t* zip_entries;
+	/* end of not serialized content */
+} pod_file_pod4_t;
+
 
 bool is_pod4(char* ident);
 
