@@ -13,59 +13,39 @@ typedef struct pod_zip_entry_pod4_s
 	pod_char_t* name;
 } pod_zip_entry_pod4_t;
 
-pod_zip_entry_pod4_t* pod_file_zip_entries_pod4_create(pod_file_pod4_t* pod4)
+typedef struct pod_zip_entry_pod5_s
 {
-	if(pod_file == NULL)
-	{
-		fprintf(stderr, "pod_file_zip_entries_pod4_create: error argument pod_file == NULL\n");
-		return NULL;
-	}
-	pod4->zip_entries = calloc(pod4->header.file_count, sizeof(pod_zip_entry_pod4_t));
-	if(pod4->zip_entries == NULL)
-	{
-		fprintf(stderr, "ERROR: Allocate memory for pod_zip_t failed!\n");
-		return NULL;
-	}
+	zip_source_t *src;
+	zip_t *za;
+	zip_error_t error;
+	pod_entry_pod5_t* entry;
+	pod_char_t* name;
+} pod_zip_entry_pod5_t;
 
-	for(pod_number_t entry = 0; entry < pod_file->header.file_count; entry++)
-	{
-		/* current pod_entry */
-		pod_entry_pod4_t* pod_entry = &pod4->entries[entry];
-		/* current pod_zip_entry */
-		pod_zip_entry_pod4_t* zip_entry = &pod4->zip_entries[entry];
+typedef struct pod_zip_entry_pod6_s
+{
+	zip_source_t *src;
+	zip_t *za;
+	zip_error_t error;
+	pod_entry_pod6_t* entry;
+	pod_char_t* name;
+} pod_zip_entry_pod6_t;
 
-		/* fill zip entry */
-		pod4->zip_entries[entry].entry = *pod_entry;
-		pod4->zip_entries[entry].name = pod4->path_data[pod_entry->path_offset];
 
-	/* create source from buffer */
-	if((zip_entry->src = zip_source_buffer_create(pod_file->entry_data[pod_entry->offset], pod_entry->size, 1, &zip_entry->error)) == NULL)
-	{
-		fprintf(stderr, "pod_zip: error creating source!\n");
-		zip_error_fini(&zip_entry->error);
-		free(pod4->zip_entries);
-		return NULL;
-	}
+pod_ssize_t pod_zip_compress(pod_byte_t** dst, pod_byte_t* src, pod_size_t decompressed);
 
-	/* open zip archive from source */
-	if((zip_entry->za = zip_open_from_source(zip_entry->src, 0, &zip_entry->error)) == NULL)
-	{
-		fprintf(stderr, "pod_zip: error opening zip from source!\n");
-		zip_error_fini(&zip_entry->error);
-		free(pod4->zip_entries);
-		return NULL;
-	}
-	zip_error_fini(&zip_entry->error);
+pod_ssize_t pod_zip_decompress(pod_byte_t** dst, pod_byte_t* src, pod_size_t compressed);
 
-	/* keep the source */
-	zip_source_keep(zip_entry->src);
+pod_zip_entry_pod4_t* pod_zip_entries_pod4_create(pod_file_pod4_t* pod4);
+pod_zip_entry_pod5_t* pod_zip_entries_pod5_create(pod_file_pod5_t* pod5);
+pod_zip_entry_pod6_t* pod_zip_entries_pod6_create(pod_file_pod6_t* pod6);
 
-	/* close archive */
-	if(zip_close(zip_entry->za) < 0)
-	{
-		fprintf(stderr, "pod_zip: error closing zip archive '%s': %s\n", zip_entry->name., zip_strerror(zip_entry->za));
-	}
-	return pod4->zip_entries;
-}
+pod_zip_entry_pod4_t* pod_zip_entries_pod4_update(pod_file_pod4_t* pod4);
+pod_zip_entry_pod5_t* pod_zip_entries_pod5_update(pod_file_pod5_t* pod5);
+pod_zip_entry_pod6_t* pod_zip_entries_pod6_update(pod_file_pod6_t* pod6);
+
+pod_zip_entry_pod4_t* pod_zip_entries_pod4_destroy(pod_file_pod4_t* pod4);
+pod_zip_entry_pod5_t* pod_zip_entries_pod5_destroy(pod_file_pod5_t* pod5);
+pod_zip_entry_pod6_t* pod_zip_entries_pod6_destroy(pod_file_pod6_t* pod6);
 
 #endif

@@ -74,4 +74,5 @@ bool pod_file_pod2_print(pod_file_pod2_t* podfile);
 bool pod_file_pod2_write(pod_file_pod2_t* pod_file, pod_string_t filename);
 bool pod_audit_entry_pod2_print(pod_audit_entry_pod2_t* audit);
 bool pod_file_pod2_extract(pod_file_pod2_t* pod_file, pod_string_t dst, pod_bool_t absolute);
+
 #endif
