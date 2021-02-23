@@ -15,6 +15,6 @@ typedef struct pod1_entry_s {
 	pod_number_t offset;
 } pod1_entry_t;
 
-bool is_pod1(char* ident);
+bool pod_is_pod1(char* ident);
 
 #endif

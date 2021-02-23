@@ -21,6 +21,6 @@ typedef struct pod6_entry_s {
 	pod_number_t zero;
 } pod6_entry_t;
 
-bool is_pod6(char* ident);
+bool pod_is_pod6(char* ident);
 
 #endif

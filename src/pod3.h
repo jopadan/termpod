@@ -22,13 +22,13 @@ typedef struct pod_header_pod3_s
 } pod_header_pod3_t;
 
 /* POD3 entry data structure */
-typedef struct pod3_entry_s {
+typedef struct pod_entry_pod3_s {
 	pod_number_t path_offset;
 	pod_number_t size;
 	pod_number_t offset;
 	pod_number_t timestamp;
 	pod_number_t checksum;
-} pod3_entry_t;
+} pod_entry_pod3_t;
 
 /* POD3 audit trail entry data structure */
 typedef struct pod_audit_entry_pod3_s
@@ -63,6 +63,6 @@ typedef struct pod_file_pod3_s
 } pod_file_pod3_t;
 
 
-bool is_pod3(char* ident);
+bool pod_is_pod3(char* ident);
 
 #endif

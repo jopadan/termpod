@@ -22,7 +22,7 @@ typedef struct epd_entry_s {
 	pod_number_t checksum;
 } epd_entry_t;
 
-bool is_epd(char* ident);
+bool pod_is_epd(char* ident);
 
 
 #endif

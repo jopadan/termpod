@@ -33,6 +33,6 @@ typedef struct pod5_entry_s {
 	pod_number_t checksum;
 } pod5_entry_t;
 
-bool is_pod5(char* ident);
+bool pod_is_pod5(char* ident);
 
 #endif

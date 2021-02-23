@@ -182,11 +182,9 @@ pod_file_t pod_fopen_mkdir_p(pod_path_t path, const char* mode)
 	free(file);
 	return dst;
 }
-
-#ifdef __USE_ATFILE
+/*
 pod_dir_t pod_opendir_mkdirat_p(int fd, pod_string_t path, const mode_t* mode)
 {
-	/* assert valid arguments */
 	if(path == NULL)
 	{
 		fprintf(stderr, "ERROR: pod_opendir_mkdirat_p(%d, NULL, \'%u\'): path == NULL!\n", fd, *mode);
@@ -199,14 +197,12 @@ pod_dir_t pod_opendir_mkdirat_p(int fd, pod_string_t path, const mode_t* mode)
 		return NULL;
 	}
 
-	/* create directory with parents */
 	if(mkdirat_p(fd, path, ACCESSPERMS) != 0 && errno != EEXIST && errno != 0)
 	{
 		fprintf(stderr,"ERROR: mkdirat_p(%d, \"%s\", ACCESSPERMS) failed with errno: %s\n", fd, path, strerror(errno));
 		return NULL;
 	}
 
-	/* canonicalize_file_name */
 	pod_path_t dir = realpath(path, NULL);
 	if(dir == NULL)
 	{
@@ -214,19 +210,16 @@ pod_dir_t pod_opendir_mkdirat_p(int fd, pod_string_t path, const mode_t* mode)
 		return NULL;
 	}
 
-	/* open canoncicalized_file_name as directory */
        	pod_dir_t dst = opendir(dir);
 	if(dst == NULL)
 		fprintf(stderr,"ERROR: opendir(\"%s\") failed with errno %s\n", dir, strerror(errno));
 
-	/* cleanup and return directory */
 	free(dir);
 	return dst;
 }
 
 pod_file_t pod_fopen_mkdirat_p(int fd, pod_path_t path, mode_t mode)
 {
-	/* assert valid arguments */
 	if(path == NULL)
 	{
 		fprintf(stderr, "ERROR: pod_fopen_mkdir_p(NULL, ACCESSPERMS): path == NULL!\n", path);
@@ -248,7 +241,6 @@ pod_file_t pod_fopen_mkdirat_p(int fd, pod_path_t path, mode_t mode)
 		return NULL;
 	}
 
-	/* canonicalize_file_name needs existing path */
 	pod_char_t *norm = realpath(dir, NULL);
 	norm = reallocarray(norm, sizeof(dir) + sizeof(file), POD_CHAR_SIZE);
 	norm = strncat(norm, file, sizeof(file));
@@ -258,7 +250,7 @@ pod_file_t pod_fopen_mkdirat_p(int fd, pod_path_t path, mode_t mode)
 	free(dir);
 	return dst;
 }
-#endif
+*/
 
 pod_path_t pod_path_system_home()
 {

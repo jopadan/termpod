@@ -4,15 +4,6 @@
 #include <zip.h>
 
 
-typedef struct pod_zip_entry_pod4_s
-{
-	zip_source_t *src;
-	zip_t *za;
-	zip_error_t error;
-	pod_entry_pod4_t* entry;
-	pod_char_t* name;
-} pod_zip_entry_pod4_t;
-
 typedef struct pod_zip_entry_pod5_s
 {
 	zip_source_t *src;

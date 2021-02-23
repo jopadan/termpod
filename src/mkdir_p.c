@@ -1,8 +1,8 @@
 /* recursive mkdir based on
 http://nion.modprobe.de/blog/archives/357-Recursive-directory-creation.html
 */
+#include "path.h"
 #include "mkdir_p.h"
-
 /* recursive mkdir */
 int mkdir_p(const char *pathname, const mode_t mode) 
 {
@@ -65,13 +65,9 @@ int mkdir_p(const char *pathname, const mode_t mode)
     return 0;
 }
 
-#ifdef __USE_ATFILE
-
-
-/* recursive mkdirat */
+/* recursive mkdirat
 int mkdirat_p(int fd, const char *pathname, const mode_t mode)
 {
-    /* assert correct arguments */
     if(pathname == NULL)
     {
     	errno = EINVAL;
@@ -104,4 +100,4 @@ int mkdirat_p(int fd, const char *pathname, const mode_t mode)
 
     return sys_openat2(fd, path, how);
 }
-#endif
+*/

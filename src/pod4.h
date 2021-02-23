@@ -1,6 +1,8 @@
 #ifndef _POD4_H
 #define _POD4_H
 
+#include <zip.h>
+
 /* POD4 header data structure */
 typedef struct pod_header_pod4_s
 {
@@ -22,7 +24,7 @@ typedef struct pod_header_pod4_s
 } pod_header_pod4_t;
 
 /* POD4 entry data structure */
-typedef struct pod4_entry_s {
+typedef struct pod_entry_pod4_s {
 	pod_number_t path_offset;
 	pod_number_t size;
 	pod_number_t offset;
@@ -30,7 +32,30 @@ typedef struct pod4_entry_s {
 	pod_number_t compression_level;
 	pod_number_t timestamp;
 	pod_number_t checksum;
-} pod4_entry_t;
+} pod_entry_pod4_t;
+
+/* POD4 audit trail entry data structure */
+typedef struct pod_audit_entry_pod4_s
+{
+	pod_char_t user[POD_STRING_32];
+	pod_time_t timestamp;
+	pod_number_t action;
+	pod_char_t path[POD_STRING_256];
+	pod_time_t old_timestamp;
+	pod_number_t old_size;
+	pod_time_t new_timestamp;
+	pod_number_t new_size;
+} pod_audit_entry_pod4_t;
+
+/* POD4 zip entry */
+typedef struct pod_zip_entry_pod4_s
+{
+	zip_source_t *src;
+	zip_t *za;
+	zip_error_t error;
+	pod_entry_pod4_t* entry;
+	pod_char_t* name;
+} pod_zip_entry_pod4_t;
 
 /* POD4 file data structure */
 typedef struct pod_file_pod4_s
@@ -53,6 +78,6 @@ typedef struct pod_file_pod4_s
 } pod_file_pod4_t;
 
 
-bool is_pod4(char* ident);
+bool pod_is_pod4(char* ident);
 
 #endif

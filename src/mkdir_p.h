@@ -1,10 +1,6 @@
 #ifndef _MKDIR_P_H
 #define _MKDIR_P_H
 
-#ifndef __USE_ATFILE
-#define __USE_ATFILE 1
-#endif
-
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -23,8 +19,6 @@ int mkdir_p(const char *pathname, const mode_t mode);
 
 
 /* recursive mkdirat based on openat2 */
-int mkdirat_p(int fd, const char *pathname, const mode_t mode);
-
-#endif /* __USE_ATFILE */
+//int mkdirat_p(int fd, const char *pathname, const mode_t mode);
 
 #endif /* _MKDIR_P_H */

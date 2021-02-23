@@ -36,7 +36,7 @@ uint32_t pod_crc_pod2_entry(pod_file_pod2_t* file, pod_number_t entry_index)
 }
  
 
-bool is_pod2(char* ident)
+bool pod_is_pod2(char* ident)
 {
   return (POD2 == pod_type(ident) >= 0);
 }
@@ -98,7 +98,7 @@ bool pod_file_pod2_print(pod_file_pod2_t* pod_file)
 		}
 	}
 	/* print file summary */
-	printf("\nSummary:\nfile checksum      : %.8X\nsize               : %lu\nfilename           : %s\nformat             : %s\ncomment            : %s\ndata checksum      : %.8X/%.8X\nfile entries       : %u\naudit entries      : %u\n",
+	printf("\nSummary:\nfile checksum      : %.8X\nsize               : %zu\nfilename           : %s\nformat             : %s\ncomment            : %s\ndata checksum      : %.8X/%.8X\nfile entries       : %u\naudit entries      : %u\n",
 		pod_file->checksum,
 		pod_file->size,
 		pod_file->filename,
@@ -156,7 +156,7 @@ pod_file_pod2_t* pod_file_pod2_create(pod_string_t filename)
 
 	if(!pod_file->data)
 	{
-		fprintf(stderr, "ERROR: Could not allocate memory of size %lu for file %s!\n", pod_file->size, filename);
+		fprintf(stderr, "ERROR: Could not allocate memory of size %zu for file %s!\n", pod_file->size, filename);
 		fclose(file);
 		pod_file_pod2_destroy(pod_file);
 		return NULL;
@@ -381,7 +381,12 @@ bool pod_file_pod2_extract(pod_file_pod2_t* pod_file, pod_string_t dst, pod_bool
 			return false;
 		}
 		/* open and create directories including parents */
-		FILE* file = pod_fopen_mkdir(filename, "wb");
+		if(mkdir_p(filename, ACCESSPERMS) != 0)
+		{
+			fprintf(stderr, "ERROR: mkdir_p(%s) failed: %s\n", filename, strerror(errno));
+			return false;
+		}
+		FILE* file = fopen(filename, "wb");
 		if(file == NULL)
 		{
 			fprintf(stderr, "ERROR: pod_fopen_mkdir(%s) failed: %s\n", filename, strerror(errno));

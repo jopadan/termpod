@@ -63,7 +63,7 @@ typedef struct pod_file_pod2_s
 	/* end of not serialized content */
 } pod_file_pod2_t;
 
-bool is_pod2(char* ident);
+bool pod_is_pod2(char* ident);
 uint32_t pod_crc(pod_byte_t* data, pod_size_t count);
 uint32_t pod_crc_pod2(pod_file_pod2_t* file);
 uint32_t pod_crc_pod2_entry(pod_file_pod2_t* file, pod_number_t entry_index);
