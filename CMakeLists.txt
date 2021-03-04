@@ -12,6 +12,7 @@ set(SOURCE_FILES
 	src/mkdir_p.c
 	src/libpodfmt.c
 	src/pod_common.c
+	src/pod_zip.c
 	src/pod1.c
 	src/pod2.c
 	src/pod3.c
@@ -26,6 +27,7 @@ set(INCLUDE_FILES
 	src/mkdir_p.h
 	src/libpodfmt.h
 	src/pod_common.h
+	src/pod_zip.h
 	src/pod1.h
 	src/pod2.h
 	src/pod3.h

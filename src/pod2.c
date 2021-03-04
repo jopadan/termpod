@@ -1,7 +1,7 @@
 #include "pod_common.h" 
 #include "pod2.h" 
 
-const char pod_audit_action_string[POD2_AUDIT_ACTION_SIZE][8] = { "Add", "Remove", "Change" };
+const char pod2_audit_action_string[POD2_AUDIT_ACTION_SIZE][8] = { "Add", "Remove", "Change" };
 
 uint32_t pod_crc(pod_byte_t* data, pod_size_t count)
 {
@@ -52,7 +52,7 @@ bool pod_audit_entry_pod2_print(pod_audit_entry_pod2_t* audit)
 	printf("\n%s %s\n%s %s\n%u / %u\n%s / %s\n",
 		audit->user,
 		pod_ctime(&audit->timestamp),
-		pod_audit_action_string[audit->action],
+		pod2_audit_action_string[audit->action],
 		audit->path,
 		audit->old_size,
 		audit->new_size,

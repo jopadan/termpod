@@ -9,5 +9,5 @@
 #include "pod5.h"
 #include "pod6.h"
 #include "epd.h"
-
+#include "pod_zip.h"
 #endif

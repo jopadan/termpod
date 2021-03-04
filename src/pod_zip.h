@@ -2,29 +2,15 @@
 #define _POD_ZIP_H
 
 #include <zip.h>
+#include <pod4.h>
+#include <pod5.h>
+#include <pod6.h>
 
-
-typedef struct pod_zip_entry_pod5_s
-{
-	zip_source_t *src;
-	zip_t *za;
-	zip_error_t error;
-	pod_entry_pod5_t* entry;
-	pod_char_t* name;
-} pod_zip_entry_pod5_t;
-
-typedef struct pod_zip_entry_pod6_s
-{
-	zip_source_t *src;
-	zip_t *za;
-	zip_error_t error;
-	pod_entry_pod6_t* entry;
-	pod_char_t* name;
-} pod_zip_entry_pod6_t;
-
+pod_number_t pod_zip_crc_ccitt32(pod_byte_t* src, pod_size_t compressed);
+pod_number_t pod_zip_crc_adler32(pod_byte_t* src, pod_size_t compressed);
+pod_size_t pod_zip_size(pod_byte_t* src, pod_size_t compressed);
 
 pod_ssize_t pod_zip_compress(pod_byte_t** dst, pod_byte_t* src, pod_size_t decompressed);
-
 pod_ssize_t pod_zip_decompress(pod_byte_t** dst, pod_byte_t* src, pod_size_t compressed);
 
 pod_zip_entry_pod4_t* pod_zip_entries_pod4_create(pod_file_pod4_t* pod4);

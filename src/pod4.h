@@ -1,6 +1,7 @@
 #ifndef _POD4_H
 #define _POD4_H
 
+#include "pod_common.h"
 #include <zip.h>
 
 /* POD4 header data structure */
@@ -79,5 +80,14 @@ typedef struct pod_file_pod4_s
 
 
 bool pod_is_pod4(char* ident);
-
+uint32_t pod_crc(pod_byte_t* data, pod_size_t count);
+uint32_t pod_crc_pod4(pod_file_pod4_t* file);
+uint32_t pod_crc_pod4_entry(pod_file_pod4_t* file, pod_number_t entry_index);
+uint32_t pod_crc_pod4_audit(pod_file_pod4_t* file, pod_number_t audit_index);
+pod_file_pod4_t* pod_file_pod4_create(pod_string_t filename);
+bool pod_file_pod4_destroy(pod_file_pod4_t* podfile);
+bool pod_file_pod4_print(pod_file_pod4_t* podfile);
+bool pod_file_pod4_write(pod_file_pod4_t* pod_file, pod_string_t filename);
+bool pod_audit_entry_pod4_print(pod_audit_entry_pod4_t* audit);
+bool pod_file_pod4_extract(pod_file_pod4_t* pod_file, pod_string_t dst, pod_bool_t absolute);
 #endif
