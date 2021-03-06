@@ -7,7 +7,7 @@
 #include <pod6.h>
 
 pod_number_t pod_zip_crc_ccitt32(pod_byte_t* src, pod_size_t compressed);
-pod_number_t pod_zip_crc_adler32(pod_byte_t* src, pod_size_t compressed);
+pod_number_t pod_zip_crc(pod_byte_t* src, pod_size_t compressed);
 pod_size_t pod_zip_size(pod_byte_t* src, pod_size_t compressed);
 
 pod_ssize_t pod_zip_compress(pod_byte_t** dst, pod_byte_t* src, pod_size_t decompressed);

@@ -81,6 +81,9 @@ typedef FILE*                                pod_file_t;
 #define POD_ENTRY_CHECKSUM_DEFAULT           0x20444542                    /* default checksum of POD entry  */
 #define POD_ENTRY_TIMESTAMP_DEFAULT          0x42494720                    /* default timestamp of POD entry */
 #define POD_HEADER_UNKNOWN10C_DEFAULT        0x58585858			   /* default value of unknown10c    */
+#define POD_HEADER_UNKNOWN11C_DEFAULT        0x58585858                    /* default value of unknown11c    */
+#define POD_HEADER_NUMBER_MIN_DEFAULT        0x00000000                    /* default minimal number         */
+#define POD_HEADER_NUMBER_MAX_DEFAULT        0xFFFFFFFF                    /* default maximal number         */
 #define POD_CHECKSUM_DEFAULT                 0xFFFFFFFF                    /* default seed for CCIT32-CRC    */
 #define POD_PATH_SEPARATOR                   '\\'                          /* default path separator         */
 #define POD_PATH_NULL                        '\0'
@@ -130,8 +133,8 @@ typedef enum pod_ident_type_t pod_ident_type_t;
 #define POD_HEADER_SIZE_INDEX_SIZE           POD_HEADER_NUMBER_SIZE
 #define POD_HEADER_NAME_COUNT_SIZE           POD_HEADER_NUMBER_SIZE
 #define POD_HEADER_UNKNOWN10C_SIZE           POD_HEADER_NUMBER_SIZE
-#define POD_HEADER_UNKNOWN114_SIZE           POD_HEADER_NUMBER_SIZE
-#define POD_HEADER_UNKNOWN118_SIZE           POD_HEADER_NUMBER_SIZE
+#define POD_HEADER_NUMBER_MIN_SIZE           POD_HEADER_NUMBER_SIZE
+#define POD_HEADER_NUMBER_MAX_SIZE           POD_HEADER_NUMBER_SIZE
 #define POD_HEADER_UNKNOWN11C_SIZE           POD_HEADER_NUMBER_SIZE
 
 #define POD_DIR_ENTRY_FILENAME_SIZE          POD_STRING_256
@@ -196,8 +199,8 @@ typedef enum pod_ident_type_t pod_ident_type_t;
 			      POD_HEADER_INDEX_OFFSET_SIZE + \
 			      POD_HEADER_UNKNOWN10C_SIZE + \
 			      POD_HEADER_SIZE_INDEX_SIZE + \
-			      POD_HEADER_UNKNOWN114_SIZE + \
-			      POD_HEADER_UNKNOWN118_SIZE + \
+			      POD_HEADER_NUMBER_MIN_SIZE + \
+			      POD_HEADER_NUMBER_MAX_SIZE + \
 			      POD_HEADER_UNKNOWN11C_SIZE)
 
 #define POD_DIR_ENTRY_POD3_SIZE (POD_DIR_ENTRY_PATH_OFFSET_SIZE + \
@@ -222,8 +225,8 @@ typedef enum pod_ident_type_t pod_ident_type_t;
 			      POD_HEADER_INDEX_OFFSET_SIZE + \
 			      POD_HEADER_UNKNOWN10C_SIZE + \
 			      POD_HEADER_SIZE_INDEX_SIZE + \
-			      POD_HEADER_UNKNOWN114_SIZE + \
-			      POD_HEADER_UNKNOWN118_SIZE + \
+			      POD_HEADER_NUMBER_MIN_SIZE + \
+			      POD_HEADER_NUMBER_MAX_SIZE + \
 			      POD_HEADER_UNKNOWN11C_SIZE)
 
 #define POD_DIR_ENTRY_POD4_SIZE (POD_DIR_ENTRY_PATH_OFFSET_SIZE + \
@@ -232,10 +235,14 @@ typedef enum pod_ident_type_t pod_ident_type_t;
 				 POD_DIR_ENTRY_UNCOMPRESSED_SIZE + \
 				 POD_DIR_ENTRY_COMPRESSION_LEVEL_SIZE + \
 				 POD_DIR_ENTRY_TIMESTAMP_SIZE + \
-				 POD_DIR_ENTRY_CHECKSUM_SIZE + \
-				 POD_DIR_ENTRY_FILENAME_SIZE)
+				 POD_DIR_ENTRY_CHECKSUM_SIZE)
 
 #define POD_DIR_ENTRY_POD4_FILENAME_SIZE     POD_DIR_ENTRY_FILENAME_SIZE
+#define POD_AUDIT_ENTRY_POD4_SIZE (POD_AUDIT_ENTRY_USER_SIZE + \
+				   POD_AUDIT_ENTRY_TIMESTAMP_SIZE + \
+				   POD_AUDIT_ENTRY_ACTION_SIZE + \
+				   POD_AUDIT_ENTRY_PATH_SIZE + \
+				   POD_AUDIT_ENTRY_DATA_SIZE)
 
 /* POD5 header sizes */
 #define POD_HEADER_POD5_SIZE (POD_HEADER_IDENT_SIZE + \
@@ -250,8 +257,8 @@ typedef enum pod_ident_type_t pod_ident_type_t;
 			      POD_HEADER_INDEX_OFFSET_SIZE + \
 			      POD_HEADER_UNKNOWN10C_SIZE + \
 			      POD_HEADER_SIZE_INDEX_SIZE + \
-			      POD_HEADER_UNKNOWN114_SIZE + \
-			      POD_HEADER_UNKNOWN118_SIZE + \
+			      POD_HEADER_NUMBER_MIN_SIZE + \
+			      POD_HEADER_NUMBER_MAX_SIZE + \
 			      POD_HEADER_UNKNOWN11C_SIZE + \
 			      POD_HEADER_NEXT_ARCHIVE_SIZE)
 
@@ -261,10 +268,14 @@ typedef enum pod_ident_type_t pod_ident_type_t;
 				 POD_DIR_ENTRY_UNCOMPRESSED_SIZE + \
 				 POD_DIR_ENTRY_COMPRESSION_LEVEL_SIZE + \
 				 POD_DIR_ENTRY_TIMESTAMP_SIZE + \
-				 POD_DIR_ENTRY_CHECKSUM_SIZE + \
-				 POD_DIR_ENTRY_FILENAME_SIZE)
+				 POD_DIR_ENTRY_CHECKSUM_SIZE)
 
 #define POD_DIR_ENTRY_POD5_FILENAME_SIZE     POD_DIR_ENTRY_FILENAME_SIZE
+#define POD_AUDIT_ENTRY_POD5_SIZE (POD_AUDIT_ENTRY_USER_SIZE + \
+				   POD_AUDIT_ENTRY_TIMESTAMP_SIZE + \
+				   POD_AUDIT_ENTRY_ACTION_SIZE + \
+				   POD_AUDIT_ENTRY_PATH_SIZE + \
+				   POD_AUDIT_ENTRY_DATA_SIZE)
 
 /* POD6 header sizes */
 #define POD_HEADER_POD6_SIZE (POD_HEADER_IDENT_SIZE + \

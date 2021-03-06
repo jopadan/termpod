@@ -73,12 +73,10 @@ pod_file_pod5_t* pod_file_pod5_create(pod_string_t filename)
 	fclose(file);
 	pod_file->checksum = pod_crc(pod_file->data, pod_file->size);
 
-	size_t data_pos = 0;
 	pod_file->header = (pod_header_pod5_t*)pod_file->data;
-	data_pos += POD_HEADER_POD5_SIZE;
-	pod_file->entries = (pod_entry_pod5_t*)(pod_file->data + data_pos);
-	data_pos += pod_file->header->file_count * POD_DIR_ENTRY_POD5_SIZE;
-
+	pod_file->entry_data = (pod_byte_t*)(pod_file->data + POD_HEADER_POD5_SIZE);
+	pod_file->entries = (pod_entry_pod5_t*)(pod_file->data + pod_file->header->index_offset);
+	
 	pod_number_t min_path_index = 0;
 	pod_number_t max_path_index = 0;
 	pod_number_t min_entry_index = 0;
@@ -102,30 +100,61 @@ pod_file_pod5_t* pod_file_pod5_create(pod_string_t filename)
 		{
 			max_entry_index = i;
 		}
+
 	}
 
+	pod_file->path_data = (pod_char_t*)(pod_file->data + pod_file->header->index_offset + pod_file->header->file_count * POD_DIR_ENTRY_POD5_SIZE + pod_file->entries[min_path_index].path_offset);
 
-	pod_file->path_data = (pod_char_t*) (pod_file->data + data_pos);
 	size_t max_path_len = strlen(pod_file->path_data + pod_file->entries[max_path_index].path_offset) + 1;
-
-	pod_file->path_data_size = (pod_file->path_data + pod_file->entries[max_path_index].path_offset + max_path_len) - 
-				(pod_file->path_data + pod_file->entries[min_entry_index].path_offset);
-
 	size_t max_entry_len = pod_file->entries[max_entry_index].size;
-	pod_file->entry_data_size = (pod_file->data + pod_file->entries[max_entry_index].offset + max_entry_len) - 
-				 (pod_file->data + pod_file->entries[min_entry_index].offset);
+	for(pod_number_t i = 0; i < pod_file->header->file_count; i++)
+	{
+		pod_file->entry_data_size += pod_file->entries[i].size;
+		pod_file->path_data_size += strlen(pod_file->path_data + pod_file->entries[i].path_offset) + 1;
+	}
 
-	pod_file->entry_data = pod_file->data + pod_file->entries[min_entry_index].offset;
+	for(pod_number_t i = 0; i < pod_file->header->audit_file_count; i++)
+	{
+		pod_file->audit_data_size += POD_AUDIT_ENTRY_POD5_SIZE;
+	}
 
-	data_pos += pod_file->path_data_size + pod_file->entry_data_size;
+	/* assert entry data size */
+	if(pod_file->entry_data_size != pod_file->header->index_offset - POD_HEADER_POD5_SIZE)
+	{
+		fprintf(stderr, "entry_data_size: %u\ncalculated entry_data_size: %u\n", pod_file->entry_data_size, pod_file->header->index_offset - POD_HEADER_POD5_SIZE);
+		pod_file_pod5_destroy(pod_file);
+		return NULL;
+	}
 
-	pod_file->audit_trail = (pod_audit_entry_pod5_t*)(pod_file->data + data_pos);
+	/* assert entry_data */
+	if(pod_file->entry_data != pod_file->data + pod_file->entries[min_entry_index].offset)
+	{
+		fprintf(stderr, "entry_data: %X\ncalculated entry_data: %X\n", (uintptr_t)pod_file->entry_data, (uintptr_t)pod_file->data + pod_file->entries[min_entry_index].offset);
+		pod_file_pod5_destroy(pod_file);
+		return NULL;
+	}
+
+	/* set audit pointer */
+	pod_file->audit_trail = (pod_audit_entry_pod5_t*)(pod_file->path_data + pod_file->path_data_size);
 
 	return pod_file;
 }
 
 bool pod_file_pod5_destroy(pod_file_pod5_t* podfile)
 {
+	if(!podfile)
+	{
+		fprintf(stderr, "ERROR: could not free podfile == NULL!\n");
+		return false;
+	}
+
+	if(podfile->data)
+		free(podfile->data);
+	if(podfile->filename);
+		free(podfile->filename);
+	if(podfile)
+		free(podfile);
+	return true;
 }
 
 bool pod_audit_entry_pod5_print(pod_audit_entry_pod5_t* audit)
