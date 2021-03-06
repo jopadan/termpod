@@ -40,7 +40,9 @@
 /* main variable type sizes of POD file formats                                                            */
 /* integer types */
 typedef uint64_t                             pod_number64_t;
+typedef int64_t                              pod_signed_number64_t;
 typedef uint32_t                             pod_number32_t;
+typedef int32_t                              pod_signed_number32_t;
 typedef uint16_t                             pod_number16_t;
 typedef pod_number32_t                       pod_number_t;
 typedef uint8_t                              pod_byte_t;
@@ -94,8 +96,8 @@ pod_string_t pod_ctime(pod_time_t* time32);
 enum pod_string_size_t
 {
 	POD_STRING_4=4, POD_STRING_32=32, POD_STRING_48=48, POD_STRING_64=64, POD_STRING_80=80,
-	POD_STRING_128=128, POD_STRING_256=256, POD_STRING_264=264,
-	POD_STRING_SIZE_SIZE=8,
+	POD_STRING_96=96, POD_STRING_128=128, POD_STRING_256=256, POD_STRING_264=264,
+	POD_STRING_SIZE_SIZE=9,
 };
 typedef enum pod_string_size_t pod_string_size_t;
 
@@ -120,7 +122,7 @@ typedef enum pod_ident_type_t pod_ident_type_t;
 #define POD_HEADER_COMMENT_SIZE              POD_COMMENT_SIZE
 #define POD_HEADER_EPD_COMMENT_SIZE          EPD_COMMENT_SIZE
 #define POD_HEADER_IDENT_SIZE                POD_IDENT_SIZE
-#define POD_HEADER_NEXT_ARCHIVE_SIZE         POD_HEADER_COMMENT_SIZE
+#define POD_HEADER_NEXT_ARCHIVE_SIZE         POD_STRING_96
 #define POD_HEADER_AUTHOR_SIZE               POD_HEADER_COMMENT_SIZE
 #define POD_HEADER_COPYRIGHT_SIZE            POD_HEADER_COMMENT_SIZE
 #define POD_HEADER_CHECKSUM_SIZE             POD_HEADER_NUMBER_SIZE
@@ -317,6 +319,7 @@ extern bool is_pod(char* ident);
 extern pod_string_t pod_type_to_file_ext(int pod_type);
 extern const char* pod_type_str(pod_ident_type_t type);
 
+int pod_size_compare(const void* a, const void* b);
 /* create absolute/relative recursive directories */
 extern int mkdir_p(const char* pathname, mode_t mode);
 #ifdef __USE_ATFILE

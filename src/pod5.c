@@ -15,8 +15,9 @@ uint32_t pod_crc_pod5(pod_file_pod5_t* file)
 		fprintf(stderr, "ERROR: pod_crc_pod5() file == NULL!");
 		return 0;
 	}
-
-	return crc_ccitt32_ffffffff(file->data + POD_IDENT_SIZE + POD_HEADER_CHECKSUM_SIZE, file->size - POD_IDENT_SIZE - POD_HEADER_CHECKSUM_SIZE);
+	pod_byte_t* start = file->data;
+	pod_number_t size = file->size;
+	return crc_ccitt32_ffffffff(start, size);
 }
 
 uint32_t pod_crc_pod5_entry(pod_file_pod5_t* file, pod_number_t entry_index)
@@ -30,6 +31,85 @@ uint32_t pod_crc_pod5_entry(pod_file_pod5_t* file, pod_number_t entry_index)
 	return crc_ccitt32_ffffffff(file->data + file->entries[entry_index].offset, file->entries[entry_index].size);
 }
 
+pod_signed_number32_t pod_entry_pod5_adjacent_diff(const void* a, const void* b)
+{
+	
+	const pod_entry_pod5_t *x = a;
+	const pod_entry_pod5_t *y = b;
+	pod_number_t dx = x->offset + x->size;
+	pod_number_t dy = y->offset;
+	return (dx == dy ? 0 : dx < dy ? -(dy-dx) : dx - dy);
+}
+
+pod_bool_t pod_file_pod5_update_sizes(pod_file_pod5_t* pod_file)
+{
+	/* check arguments and allocate memory */
+	size_t num_entries = pod_file->header->file_count;
+
+	if(pod_file->gap_sizes)
+		free(pod_file->gap_sizes);
+
+	pod_file->gap_sizes = calloc(num_entries, sizeof(pod_number_t));
+
+	if(pod_file->gap_sizes == NULL)
+	{
+		fprintf(stderr, "Unable to allocate memory for gap_sizes\n");
+		return false;
+	}
+
+	pod_number_t* offsets = calloc(num_entries, sizeof(pod_number_t));
+	pod_number_t* min_indices = calloc(num_entries, sizeof(pod_number_t));
+	pod_number_t* ordered_offsets = calloc(num_entries, sizeof(pod_number_t));
+	pod_number_t* offset_sizes = calloc(num_entries, sizeof(pod_number_t));
+
+	/* sort offset indices and accumulate entry size */
+	for(pod_number_t i = 0; i < num_entries; i++)
+		offsets[i] = pod_file->entries[i].offset;
+
+	for(pod_number_t i = 0; i < num_entries; i++)
+	{
+		for(pod_number_t j = i; j < num_entries; j++)
+		{
+			if(offsets[j] <= offsets[i])
+				min_indices[i] = j;
+		}
+	}
+
+	pod_file->entry_data_size = 0;
+	for(pod_number_t i = 0; i < num_entries; i++)
+	{
+		ordered_offsets[i] = offsets[min_indices[i]];
+		offset_sizes[i] = pod_file->entries[min_indices[i]].size;
+		pod_file->entry_data_size += offset_sizes[i];
+	}
+
+	/* find gap sizes */ 
+	for(pod_number_t i = 1; i < num_entries; i++)
+	{
+		pod_file->gap_sizes[i] = ordered_offsets[i] - (ordered_offsets[i - 1] + offset_sizes[i - 1]);
+		pod_file->gap_sizes[0] += pod_file->gap_sizes[i];
+	}
+
+	/* check data start */
+	pod_size_t data_start = offsets[min_indices[0]];
+
+	/* cleanup */
+	free(offset_sizes);
+	free(ordered_offsets);
+	free(min_indices);
+	free(offsets);
+
+	/* compare accumulated entry sizes + gap_sizes[0] to index_offset - header */
+	pod_size_t size = pod_file->entry_data_size + pod_file->gap_sizes[0];
+	pod_size_t expected_size = pod_file->header->index_offset - POD_HEADER_POD5_SIZE;
+
+	/* status output */
+	fprintf(stderr, "data_start: %u/%u\n", pod_file->entry_data - pod_file->data, data_start);
+	fprintf(stderr, "accumulated_size: %u/%u\n", size, expected_size);
+
+	return size == expected_size;
+}
+
 pod_file_pod5_t* pod_file_pod5_create(pod_string_t filename)
 {
 	pod_file_pod5_t* pod_file = calloc(1, sizeof(pod_file_pod5_t));
@@ -40,8 +120,7 @@ pod_file_pod5_t* pod_file_pod5_create(pod_string_t filename)
 		return NULL;
 	}
 
-	pod_file->filename = calloc(1, strlen(filename));
-	pod_file->filename = strcpy(pod_file->filename, filename);
+	pod_file->filename = strdup(filename);
 	pod_file->size = sb.st_size;
 
 	FILE* file = fopen(filename, "rb");
@@ -76,7 +155,8 @@ pod_file_pod5_t* pod_file_pod5_create(pod_string_t filename)
 	pod_file->header = (pod_header_pod5_t*)pod_file->data;
 	pod_file->entry_data = (pod_byte_t*)(pod_file->data + POD_HEADER_POD5_SIZE);
 	pod_file->entries = (pod_entry_pod5_t*)(pod_file->data + pod_file->header->index_offset);
-	
+	pod_number_t num_entries = pod_file->header->file_count;
+
 	pod_number_t min_path_index = 0;
 	pod_number_t max_path_index = 0;
 	pod_number_t min_entry_index = 0;
@@ -107,35 +187,21 @@ pod_file_pod5_t* pod_file_pod5_create(pod_string_t filename)
 
 	size_t max_path_len = strlen(pod_file->path_data + pod_file->entries[max_path_index].path_offset) + 1;
 	size_t max_entry_len = pod_file->entries[max_entry_index].size;
-	for(pod_number_t i = 0; i < pod_file->header->file_count; i++)
-	{
-		pod_file->entry_data_size += pod_file->entries[i].size;
-		pod_file->path_data_size += strlen(pod_file->path_data + pod_file->entries[i].path_offset) + 1;
-	}
 
 	for(pod_number_t i = 0; i < pod_file->header->audit_file_count; i++)
 	{
 		pod_file->audit_data_size += POD_AUDIT_ENTRY_POD5_SIZE;
 	}
 
-	/* assert entry data size */
-	if(pod_file->entry_data_size != pod_file->header->index_offset - POD_HEADER_POD5_SIZE)
-	{
-		fprintf(stderr, "entry_data_size: %u\ncalculated entry_data_size: %u\n", pod_file->entry_data_size, pod_file->header->index_offset - POD_HEADER_POD5_SIZE);
-		pod_file_pod5_destroy(pod_file);
-		return NULL;
-	}
-
-	/* assert entry_data */
-	if(pod_file->entry_data != pod_file->data + pod_file->entries[min_entry_index].offset)
-	{
-		fprintf(stderr, "entry_data: %X\ncalculated entry_data: %X\n", (uintptr_t)pod_file->entry_data, (uintptr_t)pod_file->data + pod_file->entries[min_entry_index].offset);
-		pod_file_pod5_destroy(pod_file);
-		return NULL;
-	}
-
 	/* set audit pointer */
 	pod_file->audit_trail = (pod_audit_entry_pod5_t*)(pod_file->path_data + pod_file->path_data_size);
+
+	if(!pod_file_pod5_update_sizes(pod_file))
+	{
+		fprintf(stderr, "ERROR: Could not update POD5 file entry sizes\n");
+		pod_file_pod5_destroy(pod_file);
+		return NULL;
+	}
 
 	return pod_file;
 }

@@ -27,6 +27,13 @@ const ssize_t POD_DIR_ENTRY_SIZE[POD_IDENT_TYPE_SIZE] =
 	POD_DIR_ENTRY_EPD_SIZE,
 };
 
+int pod_size_compare(const void* a, const void* b)
+{
+	const pod_size_t x = *(pod_size_t*)a;
+	const pod_size_t y = *(pod_size_t*)b;
+	return x == y ? 0 : x < y ? -1 : 1;
+}
+
 
 pod_ident_type_t pod_type(char* ident)
 {
