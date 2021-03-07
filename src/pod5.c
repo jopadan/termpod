@@ -15,8 +15,9 @@ uint32_t pod_crc_pod5(pod_file_pod5_t* file)
 		fprintf(stderr, "ERROR: pod_crc_pod5() file == NULL!");
 		return 0;
 	}
-	pod_byte_t* start = file->data;
-	pod_number_t size = file->size;
+	pod_byte_t* start = (pod_byte_t*)file->header + 8;
+	pod_size_t size = file->size - 8;
+
 	return crc_ccitt32_ffffffff(start, size);
 }
 
@@ -28,9 +29,25 @@ uint32_t pod_crc_pod5_entry(pod_file_pod5_t* file, pod_number_t entry_index)
 		return 0;
 	}
 
-	return crc_ccitt32_ffffffff(file->data + file->entries[entry_index].offset, file->entries[entry_index].size);
+	pod_byte_t* start = (pod_byte_t*)file->data + file->entries[entry_index].offset;
+	pod_number_t size = file->entries[entry_index].size;
+
+	return crc_ccitt32_ffffffff(start, size);
 }
 
+uint32_t pod_crc_pod5_audit_entry(pod_file_pod5_t* file, pod_number_t audit_entry_index)
+{
+	if(file == NULL || file->entry_data == NULL)
+	{
+		fprintf(stderr, "ERROR: pod_crc_pod5() file == NULL!");
+		return 0;
+	}
+
+	pod_byte_t* start = (pod_byte_t*)&file->audit_trail[audit_entry_index];
+	pod_number_t size = POD_AUDIT_ENTRY_POD5_SIZE;
+
+	return crc_ccitt32_ffffffff(start, size);
+}
 pod_signed_number32_t pod_entry_pod5_adjacent_diff(const void* a, const void* b)
 {
 	
@@ -91,7 +108,7 @@ pod_bool_t pod_file_pod5_update_sizes(pod_file_pod5_t* pod_file)
 	}
 
 	/* check data start */
-	pod_size_t data_start = offsets[min_indices[0]];
+	pod_file->data_start = pod_file->data + offsets[min_indices[0]];
 
 	/* cleanup */
 	free(offset_sizes);
@@ -99,13 +116,16 @@ pod_bool_t pod_file_pod5_update_sizes(pod_file_pod5_t* pod_file)
 	free(min_indices);
 	free(offsets);
 
+
 	/* compare accumulated entry sizes + gap_sizes[0] to index_offset - header */
 	pod_size_t size = pod_file->entry_data_size + pod_file->gap_sizes[0];
 	pod_size_t expected_size = pod_file->header->index_offset - POD_HEADER_POD5_SIZE;
-
+	pod_size_t sum_size = expected_size + POD_HEADER_POD5_SIZE + pod_file->header->size_index;
 	/* status output */
-	fprintf(stderr, "data_start: %u/%u\n", pod_file->entry_data - pod_file->data, data_start);
+	fprintf(stderr, "data_start: %u/%u\n", pod_file->entry_data - pod_file->data, pod_file->data_start - pod_file->data);
 	fprintf(stderr, "accumulated_size: %u/%u\n", size, expected_size);
+	fprintf(stderr, "index_offset + size_index: %u + %u = %u", pod_file->header->index_offset, pod_file->header->size_index,
+	sum_size);
 
 	return size == expected_size;
 }
@@ -188,13 +208,12 @@ pod_file_pod5_t* pod_file_pod5_create(pod_string_t filename)
 	size_t max_path_len = strlen(pod_file->path_data + pod_file->entries[max_path_index].path_offset) + 1;
 	size_t max_entry_len = pod_file->entries[max_entry_index].size;
 
-	for(pod_number_t i = 0; i < pod_file->header->audit_file_count; i++)
-	{
-		pod_file->audit_data_size += POD_AUDIT_ENTRY_POD5_SIZE;
-	}
-
 	/* set audit pointer */
-	pod_file->audit_trail = (pod_audit_entry_pod5_t*)(pod_file->path_data + pod_file->path_data_size);
+	if(pod_file->header->audit_file_count > 0)
+	{
+		pod_file->audit_trail = (pod_audit_entry_pod5_t*)(pod_file->path_data + pod_file->entries[max_path_index].path_offset + max_path_len);
+		pod_file->audit_data_size = pod_file->header->audit_file_count * POD_AUDIT_ENTRY_POD5_SIZE;
+	}
 
 	if(!pod_file_pod5_update_sizes(pod_file))
 	{
@@ -214,6 +233,8 @@ bool pod_file_pod5_destroy(pod_file_pod5_t* podfile)
 		return false;
 	}
 
+	if(podfile->gap_sizes)
+		free(podfile->gap_sizes);
 	if(podfile->data)
 		free(podfile->data);
 	if(podfile->filename);
@@ -230,7 +251,6 @@ bool pod_audit_entry_pod5_print(pod_audit_entry_pod5_t* audit)
 		fprintf(stderr, "ERROR: pod_audit_entry_pod5_print(audit == NULL)!\n");
 		return false;
 	}
-
 	printf("\n%s %s\n%s %s\n%u / %u\n%s / %s\n",
 		audit->user,
 		pod_ctime(&audit->timestamp),
@@ -240,6 +260,7 @@ bool pod_audit_entry_pod5_print(pod_audit_entry_pod5_t* audit)
 		audit->new_size,
 		pod_ctime(&audit->old_timestamp),
 		pod_ctime(&audit->new_timestamp));
+
 	return true;
 }
 
@@ -270,17 +291,20 @@ bool pod_file_pod5_print(pod_file_pod5_t* pod_file)
 			entry->path_offset);
 	}
 
-	printf("\nAudit:\n");
-	/* print audit trail */
-	for(int i = 0; i < pod_file->header->audit_file_count; i++)
+	if(pod_file->audit_trail != NULL || pod_file->audit_data_size > 0)
 	{
-		if(!pod_audit_entry_pod5_print(&pod_file->audit_trail[i]))
+		printf("\nAudit:\n");
+		for(int i = 0; i < pod_file->header->audit_file_count; i++)
 		{
-			fprintf(stderr, "ERROR: pod_audit_entry_pod5_print() failed!");
-			pod_file_pod5_destroy(pod_file);
-			return false;
+			if(!pod_audit_entry_pod5_print(&pod_file->audit_trail[i]))
+			{
+				fprintf(stderr, "ERROR: pod_audit_entry_pod5_print() failed!");
+				pod_file_pod5_destroy(pod_file);
+				return false;
+			}
 		}
 	}
+
 	/* print file summary */
 	printf("\nSummary:\n \
 	        file checksum      : %.8X\n \
@@ -327,5 +351,3 @@ bool pod_file_pod5_print(pod_file_pod5_t* pod_file)
 }
 
 bool pod_file_pod5_write(pod_file_pod5_t* pod_file, pod_string_t filename);
-bool pod_audit_entry_pod5_print(pod_audit_entry_pod5_t* audit);
-bool pod_file_pod5_extract(pod_file_pod5_t* pod_file, pod_string_t dst, pod_bool_t absolute);

@@ -77,6 +77,7 @@ typedef struct pod_file_pod5_s
 	pod_char_t* path_data;
 	pod_audit_entry_pod5_t* audit_trail; /* header.audit_file_count */
 	/* not serialized content */
+	pod_byte_t* data;
 	pod_number_t* gap_sizes;
 	pod_size_t path_data_size;
 	pod_size_t entry_data_size;
@@ -84,7 +85,7 @@ typedef struct pod_file_pod5_s
 	pod_string_t filename;
 	pod_size_t size;
 	pod_number_t checksum;
-	pod_byte_t* data;
+	pod_byte_t* data_start;
 	pod_zip_entry_pod5_t* zip_entries;
 	/* end of not serialized content */
 } pod_file_pod5_t;
