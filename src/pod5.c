@@ -15,9 +15,9 @@ uint32_t pod_crc_pod5(pod_file_pod5_t* file)
 		fprintf(stderr, "ERROR: pod_crc_pod5() file == NULL!");
 		return 0;
 	}
-	pod_byte_t* start = (pod_byte_t*)file->header + 8;
-	pod_size_t size = file->size - 8;
-
+	pod_byte_t* start = file->data_start;
+	pod_size_t size = file->size - (file->data_start - file->data);
+	fprintf(stderr, "CRC of data at %u of size %u!\n", start, size);
 	return crc_ccitt32_ffffffff(start, size);
 }
 
@@ -160,8 +160,21 @@ pod_file_pod5_t* pod_file_pod5_create(pod_string_t filename)
 		pod_file_pod5_destroy(pod_file);
 		return NULL;
 	}
-
-	if(fread(pod_file->data, POD_BYTE_SIZE, pod_file->size, file) != pod_file->size * POD_BYTE_SIZE)
+	if(fread(pod_file->data, POD_BYTE_SIZE, POD_IDENT_SIZE, file) != POD_IDENT_SIZE * POD_BYTE_SIZE)
+	{
+		fprintf(stderr, "ERROR: Could not read file magic %s!\n", filename);
+		fclose(file);
+		pod_file_pod5_destroy(pod_file);
+		return NULL;
+	}
+	if(fread(pod_file->data + POD_NUMBER_SIZE, POD_NUMBER_SIZE, 1, file) != 1)
+	{
+		fprintf(stderr, "ERROR: Could not read file checksum %s!\n", filename);
+		fclose(file);
+		pod_file_pod5_destroy(pod_file);
+		return NULL;
+	}
+	if(fread(pod_file->data + 8, POD_BYTE_SIZE, pod_file->size - 8, file) != (pod_file->size - 8 )* POD_BYTE_SIZE)
 	{
 		fprintf(stderr, "ERROR: Could not read file %s!\n", filename);
 		fclose(file);
