@@ -17,7 +17,7 @@ uint32_t pod_crc_pod5(pod_file_pod5_t* file)
 	}
 	pod_byte_t* start = file->data_start;
 	pod_size_t size = file->size - (file->data_start - file->data);
-	fprintf(stderr, "CRC of data at %u of size %u!\n", start, size);
+	fprintf(stderr, "CRC of data at %p of size %lu!\n", start, size);
 	return crc_ccitt32_ffffffff(start, size);
 }
 
@@ -122,9 +122,9 @@ pod_bool_t pod_file_pod5_update_sizes(pod_file_pod5_t* pod_file)
 	pod_size_t expected_size = pod_file->header->index_offset - POD_HEADER_POD5_SIZE;
 	pod_size_t sum_size = expected_size + POD_HEADER_POD5_SIZE + pod_file->header->size_index;
 	/* status output */
-	fprintf(stderr, "data_start: %u/%u\n", pod_file->entry_data - pod_file->data, pod_file->data_start - pod_file->data);
-	fprintf(stderr, "accumulated_size: %u/%u\n", size, expected_size);
-	fprintf(stderr, "index_offset + size_index: %u + %u = %u", pod_file->header->index_offset, pod_file->header->size_index,
+	fprintf(stderr, "data_start: %lu/%lu\n", pod_file->entry_data - pod_file->data, pod_file->data_start - pod_file->data);
+	fprintf(stderr, "accumulated_size: %lu/%lu\n", size, expected_size);
+	fprintf(stderr, "index_offset + size_index: %u + %u = %lu", pod_file->header->index_offset, pod_file->header->size_index,
 	sum_size);
 
 	return size == expected_size;
