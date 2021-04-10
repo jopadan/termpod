@@ -2,7 +2,7 @@
 
 const char POD_IDENT[POD_IDENT_TYPE_SIZE][POD_IDENT_SIZE + 1] = {
 	"\0POD1", "POD2\0", "POD3\0",
-       	"POD4\0", "POD5\0", "POD6\0", "dtxe\0"
+       	"POD4\0", "POD5\0", "POD6\0", "dtxe\0",
 };
 
 const ssize_t POD_HEADER_SIZE[POD_IDENT_TYPE_SIZE] =
@@ -53,6 +53,24 @@ const char* pod_type_str(pod_ident_type_t type)
 bool is_pod(char* ident)
 {
   return (POD_IDENT_TYPE_SIZE > pod_type(ident) >= 0);
+}
+
+pod_ident_type_t pod_type_peek(pod_path_t path)
+{
+	FILE* file = fopen(path, "rb");
+	if(!file)
+		return POD_IDENT_TYPE_SIZE;
+
+	pod_char_t ident[POD_IDENT_SIZE + 1] = { 0 };
+
+	if(fread(ident, 1, POD_IDENT_SIZE, file) != POD_IDENT_SIZE)
+	{
+		fclose(file);
+		return POD_IDENT_TYPE_SIZE;
+	}
+	fclose(file);
+
+	return pod_type(ident);
 }
 
 pod_string_t pod_type_to_file_ext(int pod_type)

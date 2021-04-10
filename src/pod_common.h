@@ -342,6 +342,8 @@ extern pod_path_t pod_path_append_win32(pod_path_t a, pod_path_t b);
 extern pod_path_t pod_path_to_system(pod_path_t src, pod_bool_t absolute);
 extern pod_path_t pod_path_from_system(pod_path_t src);
 
+extern pod_ident_type_t pod_type_peek(pod_path_t path);
+
 extern bool pod_path_is_pod(pod_path_t path);
 extern bool pod_path_is_win32(pod_path_t path);
 extern bool pod_path_is_posix(pod_path_t path);
@@ -354,6 +356,7 @@ extern pod_time64_t pod_time_to_time64(time_t t);
 
 extern const ssize_t POD_DIR_ENTRY_SIZE[POD_IDENT_TYPE_SIZE];
 extern const ssize_t POD_HEADER_SIZE[POD_IDENT_TYPE_SIZE];
+
 
 typedef struct pod_dir_entry_s {
 	pod_char_t* filename[POD_IDENT_TYPE_SIZE];

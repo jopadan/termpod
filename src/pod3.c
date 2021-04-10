@@ -15,9 +15,9 @@ uint32_t pod_crc_pod3(pod_file_pod3_t* file)
 		fprintf(stderr, "ERROR: pod_crc_pod3() file == NULL!");
 		return 0;
 	}
-	pod_byte_t* start = file->data + 8;
+	pod_byte_t* start = (pod_byte_t*)(file->data + 8);
 	pod_size_t size = file->size - 8;
-	fprintf(stderr, "CRC of data at %lu of size %lu!\n", start, size);
+	fprintf(stderr, "CRC of data at %p of size %lu!\n", start, size);
 	return crc_ccitt32_ffffffff(start, size);
 }
 
@@ -105,6 +105,7 @@ pod_bool_t pod_file_pod3_update_sizes(pod_file_pod3_t* pod_file)
 	{
 		pod_file->gap_sizes[i] = ordered_offsets[i] - (ordered_offsets[i - 1] + offset_sizes[i - 1]);
 		pod_file->gap_sizes[0] += pod_file->gap_sizes[i];
+		printf("gap[%d]=%d\n", i, pod_file->gap_sizes[i]);
 	}
 
 
@@ -123,9 +124,9 @@ pod_bool_t pod_file_pod3_update_sizes(pod_file_pod3_t* pod_file)
 	/* compare accumulated entry sizes + gap_sizes[0] to index_offset - header */
 	pod_size_t sum_size = expected_size + POD_HEADER_POD3_SIZE + pod_file->header->size_index;
 	/* status output */
-	fprintf(stderr, "data_start: %p/%p\n", pod_file->data_start, pod_file->data + POD_HEADER_POD3_SIZE + POD_DIR_ENTRY_POD3_SIZE + num_entries);
-	fprintf(stderr, "size_diff: %lu/%lu\n", size - expected_size, expected_size - pod_file->gap_sizes[0]);
-	fprintf(stderr, "index_offset + size_index: %u + %u = %u", pod_file->header->index_offset, pod_file->header->size_index,
+	fprintf(stderr, "data_start: %p/%p\n", pod_file->data_start, pod_file->data + POD_HEADER_POD3_SIZE);
+	fprintf(stderr, "size_diff: %lu/%lu\n", size - expected_size, pod_file->gap_sizes[0]);
+	fprintf(stderr, "index_offset + size_index: %u + %u = %lu", pod_file->header->index_offset, pod_file->header->size_index,
 	sum_size);
 
 	return size == expected_size;
@@ -292,7 +293,7 @@ bool pod_file_pod3_print(pod_file_pod3_t* pod_file)
 	{
 		pod_entry_pod3_t* entry = &pod_file->entries[i];
 		pod_char_t* name = pod_file->path_data + entry->path_offset;
-		printf("%10u %10u %.8X/%.8X %u %s %s %10u\n",
+		printf("%.10u %.10u %.8X/%.8X %10u %.32s %.32s %10u\n",
 		       	i,
 			entry->offset,
 			entry->checksum,
@@ -319,24 +320,24 @@ bool pod_file_pod3_print(pod_file_pod3_t* pod_file)
 */
 	/* print file summary */
 	printf("\nSummary:\n \
-	        file checksum      : %.8X\n \
-	        size               : %zu\n \
+	        file checksum      : %10.X\n \
+	        size               : %.10zu\n \
 		filename           : %s\n \
 		format             : %s\n \
 		comment            : %s\n \
-		data checksum      : %.8X/%.8X\n \
-		file entries       : %u\n \
-		audit entries      : %u\n \
-		revision           : %u\n \
-		priority           : %u\n \
+		data checksum      : %8X/%8X\n \
+		file entries       : %.10u\n \
+		audit entries      : %.10u\n \
+		revision           : %.10u\n \
+		priority           : %.10u\n \
 		author             : %s\n \
 		copyright          : %s\n \
-		index_offset       : %10u\n \
-		unknown0           : %.8X\n \
-		size_index         : %10u\n \
-		number_min         : %.8X\n \
-		number_max         : %.8X\n \
-		unknown1           : %.8X\n",
+		index_offset       : %.10u\n \
+		unknown0           : %.10X\n \
+		size_index         : %.10u\n \
+		number_min         : %.10X\n \
+		number_max         : %.10X\n \
+		unknown1           : %.10X\n",
 		pod_file->checksum,
 		pod_file->size,
 		pod_file->filename,
