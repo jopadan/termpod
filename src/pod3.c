@@ -15,8 +15,8 @@ uint32_t pod_crc_pod3(pod_file_pod3_t* file)
 		fprintf(stderr, "ERROR: pod_crc_pod3() file == NULL!");
 		return 0;
 	}
-	pod_byte_t* start = (pod_byte_t*)(file->data + 8);
-	pod_size_t size = file->size - 8;
+	pod_byte_t* start = (pod_byte_t*)(file->data + 8 + file->audit_data_size);
+	pod_size_t size = file->size - 8 - file->audit_data_size;
 	fprintf(stderr, "CRC of data at %p of size %lu!\n", start, size);
 	return crc_ccitt32_ffffffff(start, size);
 }
