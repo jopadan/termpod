@@ -252,15 +252,13 @@ bool pod_file_epd_print(pod_file_epd_t* pod_file)
 	{
 		pod_entry_epd_t* entry = &pod_file->entries[i];
 		pod_char_t* name = pod_file->entries[i].name;
-		printf("%10u %10u %10u/%10u %u %u %s %10u\n",
+		printf("%10u %10u %10u %10u/%10u %s %s\n",
 		       	i,
 			entry->offset,
 			entry->size,
-			entry->uncompressed,
-			entry->compression_level,
-			entry->zero,
-			name,
-			entry->path_offset);
+			entry->checksum, pod_crc_epd_entry(pod_file, i),
+			pod_ctime(&entry->timestamp),
+			name);
 	}
 
 	/* print file summary */
@@ -272,9 +270,7 @@ bool pod_file_epd_print(pod_file_epd_t* pod_file)
 		comment            : %s\n \
 		data checksum      : 0x%.8X/%.8x\n \
 		file entries       : 0x%.8X/%.10u\n \
-		version            : 0x%.8X/%.10u\n \
-		index_offset       : 0x%.8X/%.10u\n \
-		size_index         : 0x%.8X/%.10u\n",
+		version            : 0x%.8X/%.10u\n",
 		pod_file->checksum,pod_file->checksum,
 		pod_file->size,
 		pod_file->filename,
@@ -282,9 +278,7 @@ bool pod_file_epd_print(pod_file_epd_t* pod_file)
 		pod_file->header->comment,
 		pod_file->header->checksum,pod_crc_epd(pod_file),
 		pod_file->header->file_count,pod_file->header->file_count,
-		pod_file->header->version,pod_file->header->version,
-		pod_file->header->index_offset,pod_file->header->index_offset,
-		pod_file->header->size_index,pod_file->header->size_index);
+		pod_file->header->version,pod_file->header->version);
 	
 	return true;
 }
