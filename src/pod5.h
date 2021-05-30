@@ -92,7 +92,6 @@ typedef struct pod_file_pod5_s
 
 bool pod_is_pod5(char* ident);
 
-uint32_t pod_crc(pod_byte_t* data, pod_size_t count);
 uint32_t pod_crc_pod5(pod_file_pod5_t* file);
 uint32_t pod_crc_pod5_entry(pod_file_pod5_t* file, pod_number_t entry_index);
 uint32_t pod_crc_pod5_audit(pod_file_pod5_t* file, pod_number_t audit_index);

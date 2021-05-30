@@ -3,16 +3,6 @@
 
 const char pod2_audit_action_string[POD2_AUDIT_ACTION_SIZE][8] = { "Add", "Remove", "Change" };
 
-uint32_t pod_crc(pod_byte_t* data, pod_size_t count)
-{
-	if(data == NULL || count == 0)
-	{
-		fprintf(stderr, "ERROR: pod_crc() data == NULL or count == 0!");
-		return 0;
-	}
-	return crc_ccitt32_ffffffff(data, count);
-}
-
 uint32_t pod_crc_pod2(pod_file_pod2_t* file)
 {
 	if(file == NULL || file->path_data == NULL)
@@ -98,7 +88,7 @@ bool pod_file_pod2_print(pod_file_pod2_t* pod_file)
 		}
 	}
 	/* print file summary */
-	printf("\nSummary:\nfile checksum      : %.8X\nsize               : %zu\nfilename           : %s\nformat             : %s\ncomment            : %s\ndata checksum      : %.8X/%.8X\nfile entries       : %u\naudit entries      : %u\n",
+	printf("\nSummary:\nfile checksum      : 0x%.8X\nsize               : %zu\nfilename           : %s\nformat             : %s\ncomment            : %s\ndata checksum      : 0x%.8X/0x%.8X\nfile entries       : 0x%.8X/%.10u\naudit entries      : 0x%.8X/%.10u\n",
 		pod_file->checksum,
 		pod_file->size,
 		pod_file->filename,
@@ -106,8 +96,8 @@ bool pod_file_pod2_print(pod_file_pod2_t* pod_file)
 		pod_file->header->comment,
 		pod_file->header->checksum,
 		pod_crc_pod2(pod_file),
-		pod_file->header->file_count,
-		pod_file->header->audit_file_count);
+		pod_file->header->file_count,pod_file->header->file_count,
+		pod_file->header->audit_file_count,pod_file->header->audit_file_count);
 
 	
 	return true;

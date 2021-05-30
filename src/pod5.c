@@ -15,8 +15,8 @@ uint32_t pod_crc_pod5(pod_file_pod5_t* file)
 		fprintf(stderr, "ERROR: pod_crc_pod5() file == NULL!");
 		return 0;
 	}
-	pod_byte_t* start = file->data_start;
-	pod_size_t size = file->size - (file->data_start - file->data);
+	pod_byte_t* start = (pod_byte_t*)(&file->header->checksum) + POD_NUMBER_SIZE;
+	pod_size_t size = file->size - (file->header->index_offset + file->header->size_index);
 	fprintf(stderr, "CRC of data at %p of size %lu!\n", start, size);
 	return crc_ccitt32_ffffffff(start, size);
 }
@@ -320,24 +320,24 @@ bool pod_file_pod5_print(pod_file_pod5_t* pod_file)
 
 	/* print file summary */
 	printf("\nSummary:\n \
-	        file checksum      : %.8X\n \
+	        file checksum      : 0x%.8X\n \
 	        size               : %zu\n \
 		filename           : %s\n \
 		format             : %s\n \
 		comment            : %s\n \
-		data checksum      : %.8X/%.8X\n \
-		file entries       : %u\n \
-		audit entries      : %u\n \
-		revision           : %u\n \
-		priority           : %u\n \
+		data checksum      : 0x%.8X/0x%.8X\n \
+		file entries       : 0x%.8X/%.10u\n \
+		audit entries      : 0x%.8X/%.10u\n \
+		revision           : 0x%.8X/%.10u\n \
+		priority           : 0x%.8X/%.10u\n \
 		author             : %s\n \
 		copyright          : %s\n \
-		index_offset       : %10u\n \
-		unknown0           : %.8X\n \
-		size_index         : %10u\n \
-		number_min         : %.8X\n \
-		number_max         : %.8X\n \
-		unknown1           : %.8X\n \
+		index_offset       : 0x%.8X/%.10u\n \
+		unknown0           : 0x%.8X/%.10u\n \
+		size_index         : 0x%.8X/%.10u\n \
+		number_min         : 0x%.8X/%.10u\n \
+		number_max         : 0x%.8X/%.10u\n \
+		unknown1           : 0x%.8X/%.10u\n \
 		next_archive       : %s\n",
 		pod_file->checksum,
 		pod_file->size,
@@ -346,18 +346,18 @@ bool pod_file_pod5_print(pod_file_pod5_t* pod_file)
 		pod_file->header->comment,
 		pod_file->header->checksum,
 		pod_crc_pod5(pod_file),
-		pod_file->header->file_count,
-		pod_file->header->audit_file_count,
-		pod_file->header->revision,
-		pod_file->header->priority,
+		pod_file->header->file_count,pod_file->header->file_count,
+		pod_file->header->audit_file_count,pod_file->header->audit_file_count,
+		pod_file->header->revision,pod_file->header->revision,
+		pod_file->header->priority,pod_file->header->priority,
 		pod_file->header->author,
 		pod_file->header->copyright,
-		pod_file->header->index_offset,
-		pod_file->header->unknown10c,
-		pod_file->header->size_index,
-		pod_file->header->number_min,
-		pod_file->header->number_max,
-		pod_file->header->unknown11C,
+		pod_file->header->index_offset,pod_file->header->index_offset,
+		pod_file->header->unknown10c,pod_file->header->unknown10c,
+		pod_file->header->size_index,pod_file->header->size_index,
+		pod_file->header->number_min,pod_file->header->number_min,
+		pod_file->header->number_max,pod_file->header->number_max,
+		pod_file->header->unknown11C,pod_file->header->unknown11C,
 		pod_file->header->next_archive);
 	
 	return true;

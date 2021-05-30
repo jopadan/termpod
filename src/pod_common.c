@@ -5,6 +5,17 @@ const char POD_IDENT[POD_IDENT_TYPE_SIZE][POD_IDENT_SIZE + 1] = {
        	"POD4\0", "POD5\0", "POD6\0", "dtxe\0",
 };
 
+
+uint32_t pod_crc(pod_byte_t* data, pod_size_t count)
+{
+	if(data == NULL || count == 0)
+	{
+		fprintf(stderr, "ERROR: pod_crc() data == NULL or count == 0!");
+		return 0;
+	}
+	return crc_ccitt32_ffffffff(data, count);
+}
+
 const ssize_t POD_HEADER_SIZE[POD_IDENT_TYPE_SIZE] =
 {
 	POD_HEADER_POD1_SIZE,

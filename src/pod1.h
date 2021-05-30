@@ -49,7 +49,6 @@ typedef struct pod_file_pod_s
 	pod_header_pod1_t* header;
 	pod_entry_pod1_t* entries; /* header.file_count */
 	pod_byte_t* entry_data;
-	pod_audit_entry_pod1_t* audit_trail; /* header.audit_file_count */
 	/* not serialized content */
 	pod_size_t entry_data_size;
 
@@ -61,7 +60,6 @@ typedef struct pod_file_pod_s
 } pod_file_pod1_t;
 
 bool pod_is_pod1(char* ident);
-uint32_t pod_crc(pod_byte_t* data, pod_size_t count);
 uint32_t pod_crc_pod1(pod_file_pod1_t* file);
 uint32_t pod_crc_pod1_entry(pod_file_pod1_t* file, pod_number_t entry_index);
 uint32_t pod_crc_pod1_audit(pod_file_pod1_t* file, pod_number_t audit_index);

@@ -4,6 +4,16 @@
 #include "pod_common.h"
 #include <zip.h>
 
+enum pod_audit_entry_pod4_action_t
+{
+	POD4_AUDIT_ACTION_ADD    = 0,
+	POD4_AUDIT_ACTION_REMOVE = 1,
+	POD4_AUDIT_ACTION_CHANGE = 2,
+	POD4_AUDIT_ACTION_SIZE   = 3,
+};
+typedef enum pod_audit_entry_pod4_action_t pod_audit_entry_pod4_action_t;
+
+
 /* POD4 header data structure */
 typedef struct pod_header_pod4_s
 {
@@ -67,23 +77,25 @@ typedef struct pod_file_pod4_s
 	pod_char_t* path_data;
 	pod_audit_entry_pod4_t* audit_trail; /* header.audit_file_count */
 	/* not serialized content */
+	pod_byte_t* data;
+	pod_number_t* gap_sizes;
 	pod_size_t path_data_size;
 	pod_size_t entry_data_size;
 	pod_size_t audit_data_size;
 	pod_string_t filename;
 	pod_size_t size;
 	pod_number_t checksum;
-	pod_byte_t* data;
+	pod_byte_t* data_start; 
 	pod_zip_entry_pod4_t* zip_entries;
 	/* end of not serialized content */
 } pod_file_pod4_t;
 
 
 bool pod_is_pod4(char* ident);
-uint32_t pod_crc(pod_byte_t* data, pod_size_t count);
 uint32_t pod_crc_pod4(pod_file_pod4_t* file);
 uint32_t pod_crc_pod4_entry(pod_file_pod4_t* file, pod_number_t entry_index);
 uint32_t pod_crc_pod4_audit(pod_file_pod4_t* file, pod_number_t audit_index);
+pod_bool_t pod_file_pod4_update_sizes(pod_file_pod4_t* pod_file);
 pod_file_pod4_t* pod_file_pod4_create(pod_string_t filename);
 bool pod_file_pod4_destroy(pod_file_pod4_t* podfile);
 bool pod_file_pod4_print(pod_file_pod4_t* podfile);
@@ -91,3 +103,4 @@ bool pod_file_pod4_write(pod_file_pod4_t* pod_file, pod_string_t filename);
 bool pod_audit_entry_pod4_print(pod_audit_entry_pod4_t* audit);
 bool pod_file_pod4_extract(pod_file_pod4_t* pod_file, pod_string_t dst, pod_bool_t absolute);
 #endif
+
