@@ -3,7 +3,8 @@
 
 bool pod_is_epd(char* ident)
 {
-  return (EPD == pod_type(ident) >= 0);
+	pod_ident_type_t type = pod_type(ident);
+	return (type >= 0 && type == EPD);
 }
 
 uint32_t pod_crc_epd(pod_file_epd_t* file)
@@ -13,7 +14,7 @@ uint32_t pod_crc_epd(pod_file_epd_t* file)
 		fprintf(stderr, "ERROR: pod_crc_epd() file == NULL!");
 		return 0;
 	}
-	pod_byte_t* start = (pod_byte_t*)(&file->data) + POD_HEADER_EPD_SIZE;
+	pod_byte_t* start = (pod_byte_t*)(file->data) + POD_HEADER_EPD_SIZE;
 	pod_size_t size = file->size - POD_HEADER_EPD_SIZE;
 	fprintf(stderr, "CRC of data at %p of size %lu!\n", start, size);
 	return crc_ccitt32_ffffffff(start, size);
@@ -103,12 +104,12 @@ pod_bool_t pod_file_epd_update_sizes(pod_file_epd_t* pod_file)
 
 
 	/* compare accumulated entry sizes + gap_sizes[0] to index_offset - header */
-	pod_number_t size = pod_file->entry_data_size + pod_file->gap_sizes[0];
+	pod_number_t size = pod_file->entry_data_size + POD_DIR_ENTRY_EPD_SIZE * num_entries + pod_file->gap_sizes[0];
 	pod_number_t expected_size = pod_file->size - POD_HEADER_EPD_SIZE;
 	pod_number_t sum_size = expected_size + POD_HEADER_EPD_SIZE;
 	/* status output */
 	fprintf(stderr, "data_start: %lu/%lu\n", pod_file->entry_data - pod_file->data, pod_file->data_start - pod_file->data);
-	fprintf(stderr, "accumulated_size: %u/%u\n", size, expected_size);
+	fprintf(stderr, "accumulated_size: %u/%u\naccumulated gap size: %u\n", size, expected_size, pod_file->gap_sizes[0]);
 	fprintf(stderr, "data_start + size: %u + %u = %u", (pod_number_t)POD_HEADER_EPD_SIZE, size, sum_size);
 
 	return size == expected_size;
@@ -167,7 +168,7 @@ pod_file_epd_t* pod_file_epd_create(pod_string_t filename)
 		pod_file_epd_destroy(pod_file);
 		return NULL;
 	}
-	if(fread(pod_file->data + POD_IDENT_SIZE + EPD_COMMENT_SIZE, POD_NUMBER_SIZE, 3, file) != 1)
+	if(fread(pod_file->data + POD_IDENT_SIZE + EPD_COMMENT_SIZE , POD_NUMBER_SIZE, 3, file) != 3)
 	{
 		fprintf(stderr, "ERROR: Could not read file header %s!\n", filename);
 		fclose(file);
@@ -192,7 +193,7 @@ pod_file_epd_t* pod_file_epd_create(pod_string_t filename)
 	pod_number_t min_entry_index = 0;
 	pod_number_t max_entry_index = 0;
 
-	for(pod_number_t i = 0; i < pod_file->header->file_count; i++)
+	for(pod_number_t i = 0; i < num_entries; i++)
 	{
 		if(pod_file->entries[i].offset < pod_file->entries[min_entry_index].offset)
 		{
@@ -252,7 +253,7 @@ bool pod_file_epd_print(pod_file_epd_t* pod_file)
 	{
 		pod_entry_epd_t* entry = &pod_file->entries[i];
 		pod_char_t* name = pod_file->entries[i].name;
-		printf("%10u %10u %10u %10u/%10u %s %s\n",
+		printf("%10u %10u %10u 0x%.8X/0x%.8X %s %s\n",
 		       	i,
 			entry->offset,
 			entry->size,
@@ -268,7 +269,7 @@ bool pod_file_epd_print(pod_file_epd_t* pod_file)
 		filename           : %s\n \
 		format             : %s\n \
 		comment            : %s\n \
-		data checksum      : 0x%.8X/%.8x\n \
+		data checksum      : 0x%.8X/0x%.8X\n \
 		file entries       : 0x%.8X/%.10u\n \
 		version            : 0x%.8X/%.10u\n",
 		pod_file->checksum,pod_file->checksum,

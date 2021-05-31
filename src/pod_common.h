@@ -102,7 +102,7 @@ enum pod_string_size_t
 typedef enum pod_string_size_t pod_string_size_t;
 
 #define POD_COMMENT_SIZE                     POD_STRING_80                 /* comment length of POD format   */
-#define EPD_COMMENT_SIZE                     (POD_BYTE_SIZE + 1)           /* comment length of EPD format   */
+#define EPD_COMMENT_SIZE                     POD_STRING_256                /* comment length of EPD format   */
 
 enum pod_ident_type_t
 {
