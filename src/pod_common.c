@@ -5,6 +5,9 @@ const char POD_IDENT[POD_IDENT_TYPE_SIZE][POD_IDENT_SIZE + 1] = {
        	"POD4\0", "POD5\0", "POD6\0", "dtxe\0",
 };
 
+const char POD_FORMAT_DESCRIPTION[POD_IDENT_TYPE_SIZE][POD_STRING_32] = {
+"POD1", "POD2", "POD3", "POD4", "POD5", "POD6", "Extended POD (EPD)",
+};
 
 uint32_t pod_crc(pod_byte_t* data, pod_size_t count)
 {

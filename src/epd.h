@@ -4,6 +4,8 @@
 #include "pod_common.h"
 #include "pod_zip.h"
 
+/* Extended POD file format (EPD) */
+
 enum pod_audit_entry_epd_action_t
 {
 	EPD_AUDIT_ACTION_ADD    = 0,
@@ -25,7 +27,7 @@ typedef struct pod_header_epd_s
 } pod_header_epd_t;
 
 /* EPD entry data structure */
-typedef struct pod_entry_pod_s {
+typedef struct pod_entry_epd_s {
 	pod_char_t name[POD_DIR_ENTRY_EPD_FILENAME_SIZE];
 	pod_number_t size;
 	pod_number_t offset;
