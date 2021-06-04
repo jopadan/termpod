@@ -88,13 +88,10 @@ pod_bool_t pod_file_epd_update_sizes(pod_file_epd_t* pod_file)
 	/* find gap sizes */ 
 	for(pod_number_t i = 0; i < num_entries; i++)
 	{
-		if(i < num_entries - 1)
-		{
-			pod_file->gap_sizes[i + 1] = ordered_offsets[i + 1] - (ordered_offsets[i] + offset_sizes[i]);
-			pod_file->gap_sizes[0] += pod_file->gap_sizes[i + 1];
-		}
+		pod_file->gap_sizes[i] = ((i == num_entries - 1) ? pod_file->size : ordered_offsets[i + 1]) - (ordered_offsets[i] + offset_sizes[i]);
+		pod_file->gap_sizes[num_entries] += pod_file->gap_sizes[i];
 
-		fprintf(stderr, "gap[%u]=%u accum:%u\n", i, pod_file->gap_sizes[i], pod_file->gap_sizes[0]);
+		fprintf(stderr, "gap[%u]=%u accum:%u\n", i, pod_file->gap_sizes[i], pod_file->gap_sizes[num_entries]);
 	}
 
 	/* check data start */
@@ -108,12 +105,12 @@ pod_bool_t pod_file_epd_update_sizes(pod_file_epd_t* pod_file)
 
 
 	/* compare accumulated entry sizes + gap_sizes[0] to index_offset - header */
-	pod_number_t size = pod_file->entry_data_size + POD_DIR_ENTRY_EPD_SIZE * num_entries + pod_file->gap_sizes[0];
-	pod_number_t expected_size = pod_file->size - POD_HEADER_EPD_SIZE - (pod_file->gap_sizes[0] ? num_entries - pod_file->gap_sizes[0] : 0);
-	pod_number_t sum_size = expected_size + POD_HEADER_EPD_SIZE;
+	pod_number_t size = pod_file->entry_data_size + pod_file->gap_sizes[num_entries];
+	pod_number_t expected_size = pod_file->size - POD_HEADER_EPD_SIZE - POD_DIR_ENTRY_EPD_SIZE * num_entries; 
+	pod_number_t sum_size = size + POD_HEADER_EPD_SIZE;
 	/* status output */
 	fprintf(stderr, "data_start: %lu/%lu\n", pod_file->entry_data - pod_file->data, pod_file->data_start - pod_file->data);
-	fprintf(stderr, "accumulated_size: %u/%u\naccumulated gap size: %u\n", size, expected_size, pod_file->gap_sizes[0]);
+	fprintf(stderr, "accumulated_size: %u/%u\naccumulated gap size: %u\n", size, expected_size, pod_file->gap_sizes[num_entries]);
 	fprintf(stderr, "data_start + size: %u + %u = %u", (pod_number_t)POD_HEADER_EPD_SIZE, size, sum_size);
 
 	return size == expected_size;
@@ -281,7 +278,7 @@ bool pod_file_epd_print(pod_file_epd_t* pod_file)
 		pod_file->filename,
 		pod_type_str(pod_type(pod_file->header->ident)),
 		pod_file->header->comment,
-		pod_file->header->checksum,pod_crc_epd(pod_file),
+		
 		pod_file->header->file_count,pod_file->header->file_count,
 		pod_file->header->version,pod_file->header->version);
 	
