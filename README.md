@@ -12,3 +12,17 @@ cmake .
 make
 make install
 ```
+
+# Status
+
+checksum crc-ccitt32 works?
+=========================
+entry: file/single
+=========================
+EPD  : no/no
+POD2 : yes/yes
+POD3 : no/yes   file checksum changes missing offset
+POD4 : no/yes
+POD5 : no/yes
+POD6 : no/yes
+
