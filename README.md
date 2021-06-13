@@ -16,12 +16,12 @@ make install
 # Status
 
 checksum crc-ccitt32 works?
-
-data entry: file/single
-EPD       : no/no
-POD2      : yes/yes
-POD3      : no/yes   file checksum changes missing offset
-POD4      : no/yes
-POD5      : no/yes
-POD6      : no/yes
+format|data|entry|
+---|---|---
+EPD|no|no
+POD2|yes|yes
+POD3|no|yes
+POD4|no|yes
+POD5|no|yes
+POD6|no|yes
 
