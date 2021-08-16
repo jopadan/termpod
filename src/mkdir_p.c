@@ -3,6 +3,13 @@ http://nion.modprobe.de/blog/archives/357-Recursive-directory-creation.html
 */
 #include "path.h"
 #include "mkdir_p.h"
+
+#ifdef _WIN32
+const char dirsep = '\\';
+#else
+const char dirsep = '/';
+#endif
+
 /* recursive mkdir */
 int mkdir_p(const char *pathname, const mode_t mode) 
 {
@@ -20,7 +27,7 @@ int mkdir_p(const char *pathname, const mode_t mode)
     tmp[len] = '\0';
 
     /* remove trailing slash */
-    if(tmp[len - 1] == '/') {
+    if(tmp[len - 1] == dirsep) {
         tmp[len - 1] = '\0';
     }
 
@@ -33,26 +40,34 @@ int mkdir_p(const char *pathname, const mode_t mode)
     
     /* recursive mkdir */
     for(p = tmp + 1; *p; p++) {
-        if(*p == '/') {
+        if(*p == dirsep) {
             *p = 0;
             /* test path */
             if (stat(tmp, &sb) != 0) {
                 /* path does not exist - create directory */
-                if (mkdir(tmp, mode) < 0) {
+#ifdef _WIN32
+				if (mkdir(tmp) < 0) {
+#else
+				if (mkdir(tmp, mode) < 0) {
+#endif
                     return -1;
                 }
             } else if (!S_ISDIR(sb.st_mode)) {
                 /* not a directory */
                 return -1;
             }
-            *p = '/';
+            *p = dirsep;
         }
     }
     /* test path */
     if (stat(tmp, &sb) != 0) 
     {
         /* path does not exist - create directory */
+#ifdef _WIN32
+        if (mkdir(tmp) < 0)
+#else
         if (mkdir(tmp, mode) < 0)
+#endif
 	{
             return -1;
         }
