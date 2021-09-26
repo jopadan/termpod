@@ -8,10 +8,17 @@
 #define __USE_GNU 1
 #endif
 #ifdef __WIN32__
-#ifdef __MSYS__
+#ifdef __CYGWIN__
 #include <sys/cygwin.h>
-#elif defined __CYGWIN__
-#include <sys/cygwin.h>
+#endif
+#ifndef ACCESSPERMS
+#define ACCESSPERMS (S_IRWXU | S_IRWXG | S_IRWXO) /* 0777 */
+#endif
+#ifndef reallocarray
+#define reallocarray(ptr, nmemb, size) realloc(ptr, (nmemb) * (size))
+#endif
+#ifndef realpath
+#define realpath(path, resolved_path) _fullpath(resolved_path, path, PATH_MAX)
 #endif
 #endif
 #include <string.h>

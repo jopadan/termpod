@@ -7,6 +7,16 @@ set(PROJECT_DESCRIPTION "POD game archive format library written in C for all ex
 include(GNUInstallDirs)
 include(FindPkgConfig)
 
+if(MSYS AND CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+set(CMAKE_INSTALL_PREFIX $ENV{MINGW_PREFIX} CACHE PATH $ENV{MINGW_PREFIX} FORCE)
+endif()
+
+if(WIN32)
+option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
+else()
+option(BUILD_SHARED_LIBS "Build shared libraries" ON)
+endif()
+
 set(SOURCE_FILES
 	src/path.c
 	src/mkdir_p.c
@@ -44,7 +54,7 @@ pkg_search_module(ZIP REQUIRED libzip)
 pkg_search_module(CRC REQUIRED libcrc)
 
 # libpodfmt library
-add_library( ${PROJECT_NAME} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}
+add_library( ${PROJECT_NAME} ${SOURCE_FILES} ${INCLUDE_FILES}
 	${CRC_INCLUDE} ${ZIP_INCLUDE})
 target_compile_options( ${PROJECT_NAME} PUBLIC ${CRC_CFLAGS} ${ZIP_CFLAGS})
 target_include_directories(${PROJECT_NAME} PUBLIC ${CRC_INCLUDEDIR} ${ZIP_INCLUDEDIR}
@@ -77,4 +87,4 @@ install(TARGETS podfmt EXPORT ${PROJECT_NAME}Config
 install(FILES ${INCLUDE_FILES} DESTINATION
 	${CMAKE_INSTALL_INCLUDEDIR}/lib${PROJECT_NAME}/)
 
-install(FILES lib${PROJECT_NAME}.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig/)
+install(FILES ${PROJECT_BINARY_DIR}/lib${PROJECT_NAME}.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig/)
