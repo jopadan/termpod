@@ -81,6 +81,8 @@ typedef pod_time32_t                         pod_time_t;
 typedef pod_char_t*                          pod_path_t;
 typedef DIR*                                 pod_dir_t;
 typedef FILE*                                pod_file_t;
+#define POD_FILE_BLOCK_SIZE                  512
+typedef quad_t pod_file_block_t  __attribute__ ((__vector_size__(POD_FILE_BLOCK_SIZE)));
 #define POD_NUMBER_SIZE                      sizeof(pod_number_t)          /* length of a numerical entry    */
 #define POD_BYTE_SIZE                        sizeof(pod_byte_t)            /* length of a byte entry         */
 #define POD_CHAR_SIZE                        sizeof(pod_char_t)            /* length of a character entry    */

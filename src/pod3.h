@@ -29,8 +29,8 @@ typedef struct pod_header_pod3_s
 	pod_number_t index_offset; /* 0x108 */
 	pod_number_t pad10c;       /* 0x10c */
 	pod_number_t size_index;   /* 0x110 */
-	pod_number_t number_min; /* 0x00000000 */ /* 0x114 */
-	pod_number_t number_max; /* 0xFFFFFFFF */ /* 0x118 */
+	pod_number_t neutral_element;  /* 0x00000000 */ /* 0x114 */
+	pod_number_t inverse_element;  /* 0xFFFFFFFF */ /* 0x118 */
 	pod_number_t pad11c; /* 0xFFFFFFFF 0xD4009345 0x64B5C42D 0xA1FE0F74 */
 	pod_number_t pad120; /* 0x120 */
 	pod_number_t pad124; /* 0x124 */
@@ -97,7 +97,7 @@ uint32_t pod_crc_pod3(pod_file_pod3_t* file);
 uint32_t pod_crc_pod3_entry(pod_file_pod3_t* file, pod_number_t entry_index);
 uint32_t pod_crc_pod3_audit(pod_file_pod3_t* file, pod_number_t audit_index);
 pod_bool_t pod_file_pod3_update_sizes(pod_file_pod3_t* pod_file);
-pod_file_pod3_t* pod_file_pod3_create(pod_string_t filename, uint8_t size_index);
+pod_file_pod3_t* pod_file_pod3_create(pod_string_t filename);
 bool pod_file_pod3_destroy(pod_file_pod3_t* podfile);
 bool pod_file_pod3_print(pod_file_pod3_t* podfile);
 bool pod_file_pod3_write(pod_file_pod3_t* pod_file, pod_string_t filename);

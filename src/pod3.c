@@ -15,9 +15,9 @@ uint32_t pod_crc_pod3(pod_file_pod3_t* file)
 		fprintf(stderr, "ERROR: pod_crc_pod3() file == NULL!");
 		return 0;
 	}
-	pod_size_t size = file->size - (file->data - file->data_start);
-	fprintf(stderr, "CRC of data at %p of size %zu!\n", file->data_start, size);
-	return crc_ccitt32_ffffffff(file->data_start, size);
+	pod_size_t size = file->size - file->data_offset;
+	fprintf(stderr, "CRC of data at %u of size %zu!\n", file->data_offset, size);
+	return crc_ccitt32_ffffffff(file->data + file->data_offset, size);
 }
 
 uint32_t pod_crc_pod3_entry(pod_file_pod3_t* file, pod_number_t entry_index)
@@ -241,7 +241,7 @@ pod_file_pod3_t* pod_file_pod3_create(pod_string_t filename)
 }
 */
 
-pod_file_pod3_t* pod_file_pod3_create(pod_string_t filename, uint8_t size_index) {
+pod_file_pod3_t* pod_file_pod3_create(pod_string_t filename) {
     pod_number_t ecx4;
     pod_number_t edx5;
     pod_number_t edx6;
@@ -284,10 +284,11 @@ pod_file_pod3_t* pod_file_pod3_create(pod_string_t filename, uint8_t size_index)
     pod_file->filename = strdup(filename);
     pod_file->size = sb.st_size;
 
-    /* read data as sizeof(quad_t) steps */
-    quad_t* ptr = (quad_t*)&pod_file->data[0];
 
-    for(read = 0; read < sb.st_size; read += fread(ptr++, sizeof(uint8_t), sizeof(quad_t), file))
+    /* read data as sizeof(pod_file_block_t) steps */
+    pod_file_block_t* ptr = (pod_file_block_t*)&pod_file->data[0];
+
+    for(read = 0; read < sb.st_size; read += fread(ptr++, sizeof(uint8_t), sizeof(pod_file_block_t), file))
     {
 	    fprintf(stdout, "\rLoading POD file... %lu/%lu (%c)", read, sb.st_size, rotorchar[rotor]); 
 	    fflush(stdout);
@@ -295,9 +296,9 @@ pod_file_pod3_t* pod_file_pod3_create(pod_string_t filename, uint8_t size_index)
 	    rotor&=3;
     }
 
-    if( read != sb.st_size)
+    if( read != pod_file->size)
     {
-	    fprintf(stdout, "\rLoading POD file... %lu/%lu FAILED!\n", read, sb.st_size);
+	    fprintf(stdout, "\rLoading POD file... %lu/%lu FAILED!\n", read, pod_file->size);
 	    fflush(stdout);
 	    fclose(file);
 	    pod_file_pod3_destroy(pod_file);
@@ -305,6 +306,9 @@ pod_file_pod3_t* pod_file_pod3_create(pod_string_t filename, uint8_t size_index)
     }
 
     fprintf(stdout, "\rLoading POD file... %lu/%lu SUCCESS!\n", read, sb.st_size, rotorchar[rotor]);
+
+    pod_file->checksum = pod_crc(pod_file->data, pod_file->size);
+    fprintf(stdout, "\rCreating POD file checksum... %08x SUCCESS!\n", pod_file->checksum);
 
     /* read header */
     uint8_t iudiff = *(uint8_t*)&pod_file->header->index_offset - *(uint8_t*)&pod_file->header->size_index;
@@ -333,7 +337,7 @@ pod_file_pod3_t* pod_file_pod3_create(pod_string_t filename, uint8_t size_index)
     if( *(int8_t*)&size > *(int8_t*)&iudiff)
 	    size = iudiff;
 
-    pod_file->data_offset = pod_file->header->pad10c + size_index;
+    pod_file->data_offset = *(uint8_t*)&pod_file->header->size_index + *(uint8_t*)&pod_file->header->pad10c;
     (*(uint16_t*)&pod_file->data_offset) &= 0xf000;
     ecx4 = pod_file->data_offset - *(uint8_t*)&pod_file->header->pad10c;
     edx5 = *(uint8_t*)&pod_file->header->size_index - *(uint8_t*)&ecx4;
@@ -355,8 +359,58 @@ pod_file_pod3_t* pod_file_pod3_create(pod_string_t filename, uint8_t size_index)
 */
     if (*(int8_t*)&v9 < 1)
         pod_file->header->pad124 = 0;
+    
+    pod_number_t num_entries = pod_file->header->file_count;
+    pod_file->entries = (pod_entry_pod3_t*)(pod_file->data +  pod_file->header->index_offset);
 
-    fprintf(stdout, "\rReading POD file checksum... %08x SUCCESS!\n", pod_file->checksum);
+    pod_number_t min_path_index = 0;
+    pod_number_t max_path_index = 0;
+    pod_number_t min_entry_index = 0;
+    pod_number_t max_entry_index = 0;
+
+    for(pod_number_t i = 0; i < pod_file->header->file_count; i++)
+    {
+	    if(pod_file->entries[i].path_offset < pod_file->entries[min_path_index].path_offset)
+	    {
+		    min_path_index = i;
+	    }
+	    if(pod_file->entries[i].path_offset > pod_file->entries[max_path_index].path_offset)
+	    {
+		    max_path_index = i;
+	    }
+	    if(pod_file->entries[i].offset < pod_file->entries[min_entry_index].offset)
+	    {
+		    min_entry_index = i;
+	    }
+	    if(pod_file->entries[i].offset > pod_file->entries[max_entry_index].offset)
+	    {
+		    max_entry_index = i;
+	    }
+
+    }
+
+    pod_file->entry_data = (pod_byte_t*)pod_file->data + pod_file->entries[min_entry_index].offset;
+    pod_file->path_data = (pod_char_t*)((pod_byte_t*)pod_file->entries + (POD_DIR_ENTRY_POD3_SIZE * pod_file->header->file_count));
+
+    for(int i = 0; i < pod_file->header->file_count; i++)
+	    pod_file->path_data + pod_file->entries[i].path_offset;
+
+    size_t max_path_len = strlen((pod_char_t*)(pod_file->entries + pod_file->entries[max_path_index].path_offset)) + 1;
+    size_t max_entry_len = pod_file->entries[max_entry_index].size;
+
+
+    if(pod_file->header->audit_file_count > 0)
+    {
+	    pod_file->audit_trail = (pod_audit_entry_pod3_t*)((pod_byte_t*)pod_file->path_data + pod_file->header->size_index);
+	    pod_file->audit_data_size = pod_file->header->audit_file_count * POD_AUDIT_ENTRY_POD3_SIZE;
+    }
+
+    if(!pod_file_pod3_update_sizes(pod_file))
+    {
+	    fprintf(stderr, "ERROR: Could not update POD3 file entry sizes\n");
+	    pod_file_pod3_destroy(pod_file);
+	    return NULL;
+    }
     return pod_file;
 }
 
@@ -442,27 +496,27 @@ bool pod_file_pod3_print(pod_file_pod3_t* pod_file)
 	/* print file summary */
 	printf("\nSummary:\n \
 	        file checksum      : 0x%.8X\n \
-	        size               : %.10zu\n \
+	        size               : 0x%.8X/% 11zd\n \
 		filename           : %s\n \
 		format             : %s\n \
 		comment            : %s\n \
-		data checksum      : 0x%.8X/0x%.8X\n \
-		file entries       : 0x%.8X/%.10u\n \
-		audit entries      : 0x%.8X/%.10u\n \
-		revision           : 0x%.8X/%.10u\n \
-		priority           : 0x%.8X/%.10u\n \
+		data checksum      : 0x%.8X/0x% 8X\n \
+		file entries       : 0x%.8X/% 11d\n \
+		audit entries      : 0x%.8X/% 11d\n \
+		revision           : 0x%.8X/% 11d\n \
+		priority           : 0x%.8X/% 11d\n \
 		author             : %s\n \
 		copyright          : %s\n \
-		index_offset       : 0x%.8X/%.10u\n \
-		pad272_10C         : 0x%.8X/0x%.8X\n \
-		size_index         : 0x%.8X/%.10u\n \
-		number_min         : 0x%.8X/%.10u\n \
-		number_max         : 0x%.8X/%.10u\n \
-		pad_11c            : 0x%.8X/0x%.8X\n \
-		pad_120            : 0x%.8X/0x%.8X\n \
-		pad_124            : 0x%.8X/0x%.8X\n",
+		index_offset       : 0x%.8X/% 11d\n \
+		pad_10C            : 0x%.8X/% 11d\n \
+		size_index         : 0x%.8X/% 11d\n \
+		neutral_element    : 0x%.8X/% 11d\n \
+		inverse_element    : 0x%.8X/% 11d\n \
+		pad_11c            : 0x%.8X/% 11d\n \
+		pad_120            : 0x%.8X/% 11d\n \
+		pad_124            : 0x%.8X/% 11d\n",
 		pod_file->checksum,
-		pod_file->size,
+		pod_file->size, pod_file->size,
 		pod_file->filename,
 		pod_type_str(pod_type(pod_file->header->ident)),
 		pod_file->header->comment,
@@ -476,10 +530,10 @@ bool pod_file_pod3_print(pod_file_pod3_t* pod_file)
 		pod_file->header->copyright,
 		pod_file->header->index_offset,pod_file->header->index_offset,
 		pod_file->header->pad10c,
-		pod_crc_pod3(pod_file),
+		pod_file->header->pad10c,
 		pod_file->header->size_index,pod_file->header->size_index,
-		pod_file->header->number_min,pod_file->header->number_min,
-		pod_file->header->number_max,pod_file->header->number_max,
+		pod_file->header->neutral_element,pod_file->header->neutral_element,
+		pod_file->header->inverse_element,pod_file->header->inverse_element,
 		pod_file->header->pad11c,pod_file->header->pad11c,
 		pod_file->header->pad120,pod_file->header->pad120,
 		pod_file->header->pad124,pod_file->header->pad124);
