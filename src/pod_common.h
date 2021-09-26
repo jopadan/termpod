@@ -39,8 +39,6 @@
 #include <ctype.h>
 #include <dirent.h>
 
-/* libcrc - CRC-CCITT32 checksum algorithm include */
-#include "checksum.h"
 /* recursive mkdir_p with parents */
 #include "mkdir_p.h"
 

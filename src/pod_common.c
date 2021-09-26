@@ -1,4 +1,5 @@
 #include "pod_common.h"
+#include "libcrcle/crcle.h"
 
 /* rotate chars for progress status */
 char *rotorchar = "-/|\\";
@@ -19,7 +20,7 @@ uint32_t pod_crc(pod_byte_t* data, pod_size_t count)
 		fprintf(stderr, "ERROR: pod_crc() data == NULL or count == 0!");
 		return 0;
 	}
-	return crc_ccitt32_ffffffff(data, count);
+	return ccitt32_updcrc(0xffffffff, data, count);
 }
 
 const ssize_t POD_HEADER_SIZE[POD_IDENT_TYPE_SIZE] =

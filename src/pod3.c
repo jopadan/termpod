@@ -17,7 +17,7 @@ uint32_t pod_crc_pod3(pod_file_pod3_t* file)
 	}
 	pod_size_t size = file->size - file->data_offset;
 	fprintf(stderr, "CRC of data at %u of size %zu!\n", file->data_offset, size);
-	return crc_ccitt32_ffffffff(file->data + file->data_offset, size);
+	return pod_crc(file->data + file->data_offset, size);
 }
 
 uint32_t pod_crc_pod3_entry(pod_file_pod3_t* file, pod_number_t entry_index)
@@ -31,7 +31,7 @@ uint32_t pod_crc_pod3_entry(pod_file_pod3_t* file, pod_number_t entry_index)
 	pod_byte_t* start = (pod_byte_t*)file->data + file->entries[entry_index].offset;
 	pod_number_t size = file->entries[entry_index].size;
 
-	return crc_ccitt32_ffffffff(start, size);
+	return pod_crc(start, size);
 }
 
 uint32_t pod_crc_pod3_audit_entry(pod_file_pod3_t* file, pod_number_t audit_entry_index)
@@ -45,7 +45,7 @@ uint32_t pod_crc_pod3_audit_entry(pod_file_pod3_t* file, pod_number_t audit_entr
 	pod_byte_t* start = (pod_byte_t*)&file->audit_trail[audit_entry_index];
 	pod_number_t size = POD_AUDIT_ENTRY_POD3_SIZE;
 
-	return crc_ccitt32_ffffffff(start, size);
+	return pod_crc(start, size);
 }
 pod_signed_number32_t pod_entry_pod3_adjacent_diff(const void* a, const void* b)
 {
@@ -513,7 +513,8 @@ bool pod_file_pod3_print(pod_file_pod3_t* pod_file)
 		inverse_element    : 0x%.8X/% 11d\n \
 		pad_11c            : 0x%.8X/% 11d\n \
 		pad_120            : 0x%.8X/% 11d\n \
-		pad_124            : 0x%.8X/% 11d\n",
+		pad_124            : 0x%.8X/% 11d\n \
+		data_offset        : 0x%.8X/% 11d\n",
 		pod_file->checksum,
 		pod_file->size, pod_file->size,
 		pod_file->filename,
@@ -535,7 +536,8 @@ bool pod_file_pod3_print(pod_file_pod3_t* pod_file)
 		pod_file->header->inverse_element,pod_file->header->inverse_element,
 		pod_file->header->pad11c,pod_file->header->pad11c,
 		pod_file->header->pad120,pod_file->header->pad120,
-		pod_file->header->pad124,pod_file->header->pad124);
+		pod_file->header->pad124,pod_file->header->pad124,
+		pod_file->data_offset,pod_file->data_offset);
 	
 	return true;
 }

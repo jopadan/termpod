@@ -51,7 +51,7 @@ set(EXAMPLE_SOURCE_FILES
 )
 
 pkg_search_module(ZIP REQUIRED libzip)
-pkg_search_module(CRC REQUIRED libcrc)
+pkg_search_module(CRC REQUIRED libcrcle)
 
 # libpodfmt library
 add_library( ${PROJECT_NAME} ${SOURCE_FILES} ${INCLUDE_FILES}

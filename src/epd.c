@@ -17,7 +17,7 @@ uint32_t pod_crc_epd(pod_file_epd_t* file)
 	pod_byte_t* start = (pod_byte_t*)&file->data + POD_HEADER_EPD_SIZE;
 	pod_size_t size = file->size - POD_HEADER_EPD_SIZE;
 	fprintf(stderr, "CRC of data at %p of size %lu!\n", start, size);
-	return crc_ccitt32_ffffffff(start, size);
+	return pod_crc(start, size);
 }
 
 uint32_t pod_crc_epd_entry(pod_file_epd_t* file, pod_number_t entry_index)
@@ -30,7 +30,7 @@ uint32_t pod_crc_epd_entry(pod_file_epd_t* file, pod_number_t entry_index)
 
 	pod_byte_t* start = (pod_byte_t*)file->data + file->entries[entry_index].offset;
 	pod_number_t size = file->entries[entry_index].size;
-	return crc_ccitt32_ffffffff(start, size);
+	return pod_crc(start, size);
 }
 
 pod_signed_number32_t pod_entry_epd_adjacent_diff(const void* a, const void* b)

@@ -14,7 +14,7 @@ uint32_t pod_crc_pod1(pod_file_pod1_t* file)
 		return 0;
 	}
 
-	return crc_ccitt32_ffffffff(file->data + POD_IDENT_SIZE + POD_HEADER_CHECKSUM_SIZE, file->size - POD_IDENT_SIZE - POD_HEADER_CHECKSUM_SIZE);
+	return pod_crc(file->data + POD_IDENT_SIZE + POD_HEADER_CHECKSUM_SIZE, file->size - POD_IDENT_SIZE - POD_HEADER_CHECKSUM_SIZE);
 }
 
 uint32_t pod_crc_pod1_entry(pod_file_pod1_t* file, pod_number_t entry_index)
@@ -25,7 +25,7 @@ uint32_t pod_crc_pod1_entry(pod_file_pod1_t* file, pod_number_t entry_index)
 		return 0;
 	}
 
-	return crc_ccitt32_ffffffff(file->data + file->entries[entry_index].offset, file->entries[entry_index].size);
+	return pod_crc(file->data + file->entries[entry_index].offset, file->entries[entry_index].size);
 }
  
 
