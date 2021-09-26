@@ -57,3 +57,4 @@ cmake_install.cmake
 *.pc
 *.pod
 *.epd
+install_manifest.txt

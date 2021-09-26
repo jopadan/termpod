@@ -15,10 +15,9 @@ uint32_t pod_crc_pod3(pod_file_pod3_t* file)
 		fprintf(stderr, "ERROR: pod_crc_pod3() file == NULL!");
 		return 0;
 	}
-	pod_byte_t* start = (pod_byte_t*)(&file->header->checksum)+POD_NUMBER_SIZE;
-	pod_size_t size = file->size - (file->header->index_offset + file->header->size_index);
-	fprintf(stderr, "CRC of data at %p of size %zu!\n", start, size);
-	return crc_ccitt32_ffffffff(start, size);
+	pod_size_t size = file->size - (file->data - file->data_start);
+	fprintf(stderr, "CRC of data at %p of size %zu!\n", file->data_start, size);
+	return crc_ccitt32_ffffffff(file->data_start, size);
 }
 
 uint32_t pod_crc_pod3_entry(pod_file_pod3_t* file, pod_number_t entry_index)
@@ -132,6 +131,7 @@ pod_bool_t pod_file_pod3_update_sizes(pod_file_pod3_t* pod_file)
 	return size == expected_size;
 }
 
+/*
 pod_file_pod3_t* pod_file_pod3_create(pod_string_t filename)
 {
 	pod_file_pod3_t* pod_file = calloc(1, sizeof(pod_file_pod3_t));
@@ -223,7 +223,7 @@ pod_file_pod3_t* pod_file_pod3_create(pod_string_t filename)
 	size_t max_path_len = strlen((pod_char_t*)(pod_file->entries + pod_file->entries[max_path_index].path_offset)) + 1;
 	size_t max_entry_len = pod_file->entries[max_entry_index].size;
 
-	/* set audit pointer */
+
 	if(pod_file->header->audit_file_count > 0)
 	{
 		pod_file->audit_trail = (pod_audit_entry_pod3_t*)((pod_byte_t*)pod_file->path_data + pod_file->header->size_index);
@@ -239,6 +239,128 @@ pod_file_pod3_t* pod_file_pod3_create(pod_string_t filename)
 
 	return pod_file;
 }
+*/
+
+pod_file_pod3_t* pod_file_pod3_create(char* filename, uint8_t size_index) {
+    void** ecx4;
+    void** edx5;
+    void** edx6;
+    void** esi7;
+    void** v8;
+    void** v9;
+
+    /* read POD data */
+    struct stat sb;
+    size_t bytes = 0;
+    size_t read = 0;
+    uint8_t rotor = 0;
+
+    if(stat(filename, &sb) != 0)
+	    return NULL;
+
+    FILE* file = fopen(filename, "rb");
+    if(!file)
+	    return NULL;
+
+    /* allocate memory */
+    pod_file_pod3_t* pod_file = calloc(1, sizeof(pod_file_pod3_t));
+    if(!pod_file)
+    {
+    	fclose(file);
+    	return NULL;
+    }
+
+    pod_file->data = calloc(sb.st_size,sizeof(uint8_t));
+    if(!pod_file->data)
+    {
+    	fclose(file);
+	free(pod_file);
+    	return NULL;
+    }
+
+    pod_file->header = (pod_header_pod3_t*) data;
+    pod_file->filename = strdup(filename);
+    pod_file->size = sb.st_size;
+
+    /* read data as sizeof(quad_t) steps */
+    quad_t* ptr = (quad_t*)&pod_file->data[0];
+
+    for(read = 0; read < sb.st_size; read += fread(ptr++, sizeof(uint8_t), sizeof(quad_t), file))
+    {
+	    fprintf(stdout, "\rLoading POD file... %lu/%lu (%c)", read, sb.st_size, rotorchar[rotor]); 
+	    fflush(stdout);
+	    rotor++;
+	    rotor&=3;
+    }
+
+    if( read != sb.st_size)
+    {
+	    fprintf(stdout, "\rLoading POD file... %lu/%lu FAILED!\n", read, sb.st_size);
+	    fflush(stdout);
+	    fclose(file);
+	    pod_file_pod3_destroy(pod_file);
+	    return NULL;
+    }
+
+    fprintf(stdout, "\rLoading POD file... %lu/%lu SUCCESS!\n", read, sb.st_size, rotorchar[rotor]);
+
+    /* read header */
+    uint8_t iudiff = *(uint8_t*)&pod_file->header->index_offset - *(uint8_t*)&pod_file->header->size_index;
+    uint8_t isdiff = *(int8_t*)&pod_file->header->index_offset - *(int8_t*)&pod_file->header->size_index;
+    size_t size = 0;
+
+    if(!pod_is_pod3(pod_file->header->ident))
+    {
+	    fprintf(stdout, "\rReading POD file magic... %u/%u FAILED!\n", 0,4);
+	    fflush(stdout);
+	    fclose(file);
+	    free(data);
+	    free(pod_file);
+	    data = NULL;
+	    pod_file = NULL;
+	    return pod_file;
+    }
+    else
+    	fprintf(stdout, "\rReading POD file magic... %u/%u SUCCESS!\n", 4,4);
+
+    if((header->checksum = *(pod_number_t*)(data + 4)) == 0)
+	    pod_file->header->checksum = 0xfffffffe;
+    else if(*(int8_t*)&pod_file->header->index_offset <= *(int8_t*)&pod_file->header->size_index)
+    {
+	    printf("Loading index_offset: %02x/%08x size_index: %02x/%08x\n", *(int8_t*)&pod_file->header->index_offset, pod_file->header->index_offset, *(int8_t*)&pod_file->header->size_index, pod_file->header->size_index);
+	    pod_file->header->checksum = 0xffffffff;
+    }
+
+    if( *(int8_t*)&size > *(int8_t*)&iudiff)
+	    size = iudiff;
+
+    pod_file->header->data_start = pod_file->header->pad272_10c + size_index;
+    (*(uint16_t*)&pod_file->header->data_start &= 0xf000;
+    ecx4 = pod_file->header->data_start - *(uint8_t*)&pod_file->header->pad272_10c;
+    edx5 = *(uint8_t*)&pod_file->header->size_index - *(uint8_t*)&ecx4
+    pod_file->header->pad124 = edx5
+    edx6 = edx5 + 0xfff;
+    pod_file->header->pad11C = ecx4;
+    (*(uint16_t*)&edx6) &= 0xf000;
+    esi7 = pod_file->header->pad120
+    pod_file->header->pad124 = edx6;
+    if (*(int8_t*)&edx6 > *(int8_t*)&pod_file->header->pad120)
+        pod_file->header->pad124 = esi7;
+
+    pod_file->header->pad124 = pod_file->header->checksum;
+    /*
+    SetFilePointer(header->checksum, data_start, 0, 0);
+    v9 = header->checksum;
+    ReadFile();
+    header->pad124 = v9;
+*/
+    if (*(int8_t*)&v9 < 1)
+        pod_file->header->pad124 = 0;
+
+    fprintf(stdout, "\rReading POD file checksum... %08x SUCCESS!\n", checksum);
+    return pod_file;
+}
+
 
 bool pod_file_pod3_destroy(pod_file_pod3_t* podfile)
 {
