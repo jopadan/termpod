@@ -241,18 +241,20 @@ pod_file_pod3_t* pod_file_pod3_create(pod_string_t filename)
 }
 */
 
-pod_file_pod3_t* pod_file_pod3_create(char* filename, uint8_t size_index) {
-    void** ecx4;
-    void** edx5;
-    void** edx6;
-    void** esi7;
-    void** v8;
-    void** v9;
+pod_file_pod3_t* pod_file_pod3_create(pod_string_t filename, uint8_t size_index) {
+    pod_number_t ecx4;
+    pod_number_t edx5;
+    pod_number_t edx6;
+    pod_number_t esi7;
+    pod_number_t v8;
+    pod_number_t v9;
 
     /* read POD data */
     struct stat sb;
     size_t bytes = 0;
     size_t read = 0;
+
+    char *rotorchar = "-/|\\";
     uint8_t rotor = 0;
 
     if(stat(filename, &sb) != 0)
@@ -278,7 +280,7 @@ pod_file_pod3_t* pod_file_pod3_create(char* filename, uint8_t size_index) {
     	return NULL;
     }
 
-    pod_file->header = (pod_header_pod3_t*) data;
+    pod_file->header = (pod_header_pod3_t*)pod_file->data;
     pod_file->filename = strdup(filename);
     pod_file->size = sb.st_size;
 
@@ -314,16 +316,13 @@ pod_file_pod3_t* pod_file_pod3_create(char* filename, uint8_t size_index) {
 	    fprintf(stdout, "\rReading POD file magic... %u/%u FAILED!\n", 0,4);
 	    fflush(stdout);
 	    fclose(file);
-	    free(data);
-	    free(pod_file);
-	    data = NULL;
-	    pod_file = NULL;
-	    return pod_file;
+	    pod_file_pod3_destroy(pod_file);
+	    return NULL;
     }
     else
     	fprintf(stdout, "\rReading POD file magic... %u/%u SUCCESS!\n", 4,4);
 
-    if((header->checksum = *(pod_number_t*)(data + 4)) == 0)
+    if((pod_file->header->checksum = *(pod_number_t*)(pod_file->data + 4)) == 0)
 	    pod_file->header->checksum = 0xfffffffe;
     else if(*(int8_t*)&pod_file->header->index_offset <= *(int8_t*)&pod_file->header->size_index)
     {
@@ -334,15 +333,15 @@ pod_file_pod3_t* pod_file_pod3_create(char* filename, uint8_t size_index) {
     if( *(int8_t*)&size > *(int8_t*)&iudiff)
 	    size = iudiff;
 
-    pod_file->header->data_start = pod_file->header->pad272_10c + size_index;
-    (*(uint16_t*)&pod_file->header->data_start &= 0xf000;
-    ecx4 = pod_file->header->data_start - *(uint8_t*)&pod_file->header->pad272_10c;
-    edx5 = *(uint8_t*)&pod_file->header->size_index - *(uint8_t*)&ecx4
-    pod_file->header->pad124 = edx5
+    pod_file->data_offset = pod_file->header->pad272_10c + size_index;
+    (*(uint16_t*)&pod_file->data_offset) &= 0xf000;
+    ecx4 = pod_file->data_offset - *(uint8_t*)&pod_file->header->pad272_10c;
+    edx5 = *(uint8_t*)&pod_file->header->size_index - *(uint8_t*)&ecx4;
+    pod_file->header->pad124 = edx5;
     edx6 = edx5 + 0xfff;
     pod_file->header->pad11C = ecx4;
     (*(uint16_t*)&edx6) &= 0xf000;
-    esi7 = pod_file->header->pad120
+    esi7 = pod_file->header->pad120;
     pod_file->header->pad124 = edx6;
     if (*(int8_t*)&edx6 > *(int8_t*)&pod_file->header->pad120)
         pod_file->header->pad124 = esi7;
@@ -357,7 +356,7 @@ pod_file_pod3_t* pod_file_pod3_create(char* filename, uint8_t size_index) {
     if (*(int8_t*)&v9 < 1)
         pod_file->header->pad124 = 0;
 
-    fprintf(stdout, "\rReading POD file checksum... %08x SUCCESS!\n", checksum);
+    fprintf(stdout, "\rReading POD file checksum... %08x SUCCESS!\n", pod_file->checksum);
     return pod_file;
 }
 
@@ -455,11 +454,11 @@ bool pod_file_pod3_print(pod_file_pod3_t* pod_file)
 		author             : %s\n \
 		copyright          : %s\n \
 		index_offset       : 0x%.8X/%.10u\n \
-		unknown0           : 0x%.8X/0x%.8X\n \
+		pad272_10C         : 0x%.8X/0x%.8X\n \
 		size_index         : 0x%.8X/%.10u\n \
 		number_min         : 0x%.8X/%.10u\n \
 		number_max         : 0x%.8X/%.10u\n \
-		unknown1           : 0x%.8X/0x%.8X\n",
+		pad_11c            : 0x%.8X/0x%.8X\n",
 		pod_file->checksum,
 		pod_file->size,
 		pod_file->filename,
@@ -474,12 +473,12 @@ bool pod_file_pod3_print(pod_file_pod3_t* pod_file)
 		pod_file->header->author,
 		pod_file->header->copyright,
 		pod_file->header->index_offset,pod_file->header->index_offset,
-		pod_file->header->unknown10c,
+		pod_file->header->pad272_10c,
 		pod_crc_pod3(pod_file),
 		pod_file->header->size_index,pod_file->header->size_index,
 		pod_file->header->number_min,pod_file->header->number_min,
 		pod_file->header->number_max,pod_file->header->number_max,
-		pod_file->header->unknown11C,
+		pod_file->header->pad11C,
 		pod_crc_pod3(pod_file));
 	
 	return true;

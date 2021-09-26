@@ -85,6 +85,7 @@ typedef struct pod_file_pod3_s
 	pod_string_t filename;
 	pod_size_t size;
 	pod_number_t checksum;
+	pod_number_t data_offset;
 	pod_byte_t* data_start;
 	pod_zip_entry_pod3_t* zip_entries;
 	/* end of not serialized content */
@@ -96,7 +97,7 @@ uint32_t pod_crc_pod3(pod_file_pod3_t* file);
 uint32_t pod_crc_pod3_entry(pod_file_pod3_t* file, pod_number_t entry_index);
 uint32_t pod_crc_pod3_audit(pod_file_pod3_t* file, pod_number_t audit_index);
 pod_bool_t pod_file_pod3_update_sizes(pod_file_pod3_t* pod_file);
-pod_file_pod3_t* pod_file_pod3_create(pod_string_t filename);
+pod_file_pod3_t* pod_file_pod3_create(pod_string_t filename, uint8_t size_index);
 bool pod_file_pod3_destroy(pod_file_pod3_t* podfile);
 bool pod_file_pod3_print(pod_file_pod3_t* podfile);
 bool pod_file_pod3_write(pod_file_pod3_t* pod_file, pod_string_t filename);
