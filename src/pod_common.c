@@ -1,5 +1,8 @@
 #include "pod_common.h"
 
+/* rotate chars for progress status */
+char *rotorchar = "-/|\\";
+
 const char POD_IDENT[POD_IDENT_TYPE_SIZE][POD_IDENT_SIZE + 1] = {
 	"\0POD1", "POD2\0", "POD3\0",
        	"POD4\0", "POD5\0", "POD6\0", "dtxe\0",

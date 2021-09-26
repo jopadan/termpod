@@ -254,7 +254,6 @@ pod_file_pod3_t* pod_file_pod3_create(pod_string_t filename) {
     size_t bytes = 0;
     size_t read = 0;
 
-    char *rotorchar = "-/|\\";
     uint8_t rotor = 0;
 
     if(stat(filename, &sb) != 0)
@@ -496,11 +495,11 @@ bool pod_file_pod3_print(pod_file_pod3_t* pod_file)
 	/* print file summary */
 	printf("\nSummary:\n \
 	        file checksum      : 0x%.8X\n \
-	        size               : 0x%.8X/% 11zd\n \
+	        size               : 0x%zX/%zd\n \
 		filename           : %s\n \
 		format             : %s\n \
 		comment            : %s\n \
-		data checksum      : 0x%.8X/0x% 8X\n \
+		data checksum      : 0x%.8X/0x%8X\n \
 		file entries       : 0x%.8X/% 11d\n \
 		audit entries      : 0x%.8X/% 11d\n \
 		revision           : 0x%.8X/% 11d\n \
