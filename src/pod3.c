@@ -333,13 +333,13 @@ pod_file_pod3_t* pod_file_pod3_create(pod_string_t filename, uint8_t size_index)
     if( *(int8_t*)&size > *(int8_t*)&iudiff)
 	    size = iudiff;
 
-    pod_file->data_offset = pod_file->header->pad272_10c + size_index;
+    pod_file->data_offset = pod_file->header->pad10c + size_index;
     (*(uint16_t*)&pod_file->data_offset) &= 0xf000;
-    ecx4 = pod_file->data_offset - *(uint8_t*)&pod_file->header->pad272_10c;
+    ecx4 = pod_file->data_offset - *(uint8_t*)&pod_file->header->pad10c;
     edx5 = *(uint8_t*)&pod_file->header->size_index - *(uint8_t*)&ecx4;
     pod_file->header->pad124 = edx5;
     edx6 = edx5 + 0xfff;
-    pod_file->header->pad11C = ecx4;
+    pod_file->header->pad11c = ecx4;
     (*(uint16_t*)&edx6) &= 0xf000;
     esi7 = pod_file->header->pad120;
     pod_file->header->pad124 = edx6;
@@ -458,7 +458,9 @@ bool pod_file_pod3_print(pod_file_pod3_t* pod_file)
 		size_index         : 0x%.8X/%.10u\n \
 		number_min         : 0x%.8X/%.10u\n \
 		number_max         : 0x%.8X/%.10u\n \
-		pad_11c            : 0x%.8X/0x%.8X\n",
+		pad_11c            : 0x%.8X/0x%.8X\n \
+		pad_120            : 0x%.8X/0x%.8X\n \
+		pad_124            : 0x%.8X/0x%.8X\n",
 		pod_file->checksum,
 		pod_file->size,
 		pod_file->filename,
@@ -473,13 +475,14 @@ bool pod_file_pod3_print(pod_file_pod3_t* pod_file)
 		pod_file->header->author,
 		pod_file->header->copyright,
 		pod_file->header->index_offset,pod_file->header->index_offset,
-		pod_file->header->pad272_10c,
+		pod_file->header->pad10c,
 		pod_crc_pod3(pod_file),
 		pod_file->header->size_index,pod_file->header->size_index,
 		pod_file->header->number_min,pod_file->header->number_min,
 		pod_file->header->number_max,pod_file->header->number_max,
-		pod_file->header->pad11C,
-		pod_crc_pod3(pod_file));
+		pod_file->header->pad11c,pod_file->header->pad11c,
+		pod_file->header->pad120,pod_file->header->pad120,
+		pod_file->header->pad124,pod_file->header->pad124);
 	
 	return true;
 }
