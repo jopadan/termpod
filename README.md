@@ -3,7 +3,6 @@ POD game archive format library written in C for all existing versions
 
 # Dependencies
 - [libzip] (http://github.com/nih-at/libzip/)
-- [libcrcle] (http://github.com/jopadan/libcrcle/)
 
 # Building
 
