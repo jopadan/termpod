@@ -320,27 +320,27 @@ bool pod_file_pod5_print(pod_file_pod5_t* pod_file)
 
 	/* print file summary */
 	printf("\nSummary:\n \
-	        file checksum      : 0x%.8X\n \
-	        size               : %zu\n \
+	        file checksum      : 0x%.8X/% 11d\n \
+	        size               : 0x%.8zX/% 11zd\n \
 		filename           : %s\n \
 		format             : %s\n \
 		comment            : %s\n \
-		data checksum      : 0x%.8X/0x%.8X\n \
-		file entries       : 0x%.8X/%.10u\n \
-		audit entries      : 0x%.8X/%.10u\n \
-		revision           : 0x%.8X/%.10u\n \
-		priority           : 0x%.8X/%.10u\n \
+		data checksum      : 0x%.8X/ 0x%.8X\n \
+		file entries       : 0x%.8X/% 11d\n \
+		audit entries      : 0x%.8X/% 11d\n \
+		revision           : 0x%.8X/% 11d\n \
+		priority           : 0x%.8X/% 11d\n \
 		author             : %s\n \
 		copyright          : %s\n \
-		index_offset       : 0x%.8X/%.10u\n \
-		unknown0           : 0x%.8X/%.10u\n \
-		size_index         : 0x%.8X/%.10u\n \
-		number_min         : 0x%.8X/%.10u\n \
-		number_max         : 0x%.8X/%.10u\n \
-		unknown1           : 0x%.8X/%.10u\n \
+		index_offset       : 0x%.8X/% 11d\n \
+		unknown0           : 0x%.8X/% 11d\n \
+		size_index         : 0x%.8X/% 11d\n \
+		flag0              : 0x%.8X/% 11d\n \
+		flag1              : 0x%.8X/% 11d\n \
+		unknown1           : 0x%.8X/% 11d\n \
 		next_archive       : %s\n",
-		pod_file->checksum,
-		pod_file->size,
+		pod_file->checksum, pod_file->checksum,
+		pod_file->size, pod_file->size,
 		pod_file->filename,
 		pod_type_str(pod_type(pod_file->header->ident)),
 		pod_file->header->comment,
@@ -355,8 +355,8 @@ bool pod_file_pod5_print(pod_file_pod5_t* pod_file)
 		pod_file->header->index_offset,pod_file->header->index_offset,
 		pod_file->header->unknown10c,pod_file->header->unknown10c,
 		pod_file->header->size_index,pod_file->header->size_index,
-		pod_file->header->number_min,pod_file->header->number_min,
-		pod_file->header->number_max,pod_file->header->number_max,
+		pod_file->header->flag0,pod_file->header->flag0,
+		pod_file->header->flag1,pod_file->header->flag1,
 		pod_file->header->unknown11C,pod_file->header->unknown11C,
 		pod_file->header->next_archive);
 	

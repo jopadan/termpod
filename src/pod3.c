@@ -15,9 +15,22 @@ uint32_t pod_crc_pod3(pod_file_pod3_t* file)
 		fprintf(stderr, "ERROR: pod_crc_pod3() file == NULL!");
 		return 0;
 	}
-	pod_size_t size = file->size - file->data_offset;
-	fprintf(stderr, "CRC of data at %u of size %zu!\n", file->data_offset, size);
-	return pod_crc(file->data + file->data_offset, size);
+	pod_size_t offset = 0x412;
+	pod_size_t size = file->size - offset;
+	fprintf(stderr, "CRC of data at %p of size %zu!\n", file->data + offset, size);
+	return pod_crc(file->data + offset, size);
+}
+
+uint32_t pod_crc_pod3_off(pod_file_pod3_t* file, pod_size_t offset)
+{
+	if(file == NULL || file->path_data == NULL)
+	{
+		fprintf(stderr, "ERROR: pod_crc_pod3() file == NULL!");
+		return 0;
+	}
+	pod_size_t size = file->size - offset;
+	fprintf(stderr, "CRC of data at %p of size %zu!\n", file->data + offset, size);
+	return pod_crc(file->data + offset, size);
 }
 
 uint32_t pod_crc_pod3_entry(pod_file_pod3_t* file, pod_number_t entry_index)
@@ -307,8 +320,18 @@ pod_file_pod3_t* pod_file_pod3_create(pod_string_t filename) {
     fprintf(stdout, "\rLoading POD file... %lu/%lu SUCCESS!\n", read, sb.st_size, rotorchar[rotor]);
 
     pod_file->checksum = pod_crc(pod_file->data, pod_file->size);
-    fprintf(stdout, "\rCreating POD file checksum... %08x SUCCESS!\n", pod_file->checksum);
 
+/*
+    for(pod_number_t i = 0; i < pod_file->size; i+=4)
+    {
+    	uint32_t chksum = pod_crc(pod_file->data + i, pod_file->size - i);
+	printf("Checksum offset: %X\n", i);
+	if(chksum == pod_file->header->checksum)
+		printf("MATCH: %X\n", i);
+    }
+*/
+
+    fprintf(stdout, "\rCreating POD file checksum... %08x SUCCESS!\n", pod_file->checksum);
     /* read header */
     uint8_t iudiff = *(uint8_t*)&pod_file->header->index_offset - *(uint8_t*)&pod_file->header->size_index;
     uint8_t isdiff = *(int8_t*)&pod_file->header->index_offset - *(int8_t*)&pod_file->header->size_index;
@@ -494,12 +517,12 @@ bool pod_file_pod3_print(pod_file_pod3_t* pod_file)
 */
 	/* print file summary */
 	printf("\nSummary:\n \
-	        file checksum      : 0x%.8X\n \
-	        size               : 0x%zX/%zd\n \
+	        file checksum      : 0x%.8X/% 11d\n \
+	        size               : 0x%.8zX/% 11zd\n \
 		filename           : %s\n \
 		format             : %s\n \
 		comment            : %s\n \
-		data checksum      : 0x%.8X/0x%8X\n \
+		data checksum      : 0x%.8X/ 0x%.8X\n \
 		file entries       : 0x%.8X/% 11d\n \
 		audit entries      : 0x%.8X/% 11d\n \
 		revision           : 0x%.8X/% 11d\n \
@@ -509,13 +532,13 @@ bool pod_file_pod3_print(pod_file_pod3_t* pod_file)
 		index_offset       : 0x%.8X/% 11d\n \
 		pad_10C            : 0x%.8X/% 11d\n \
 		size_index         : 0x%.8X/% 11d\n \
-		neutral_element    : 0x%.8X/% 11d\n \
-		inverse_element    : 0x%.8X/% 11d\n \
+		flag0              : 0x%.8X/% 11d\n \
+		flag1              : 0x%.8X/% 11d\n \
 		pad_11c            : 0x%.8X/% 11d\n \
 		pad_120            : 0x%.8X/% 11d\n \
 		pad_124            : 0x%.8X/% 11d\n \
 		data_offset        : 0x%.8X/% 11d\n",
-		pod_file->checksum,
+		pod_file->checksum, pod_file->checksum,
 		pod_file->size, pod_file->size,
 		pod_file->filename,
 		pod_type_str(pod_type(pod_file->header->ident)),
@@ -532,8 +555,8 @@ bool pod_file_pod3_print(pod_file_pod3_t* pod_file)
 		pod_file->header->pad10c,
 		pod_file->header->pad10c,
 		pod_file->header->size_index,pod_file->header->size_index,
-		pod_file->header->neutral_element,pod_file->header->neutral_element,
-		pod_file->header->inverse_element,pod_file->header->inverse_element,
+		pod_file->header->flag0,pod_file->header->flag0,
+		pod_file->header->flag1,pod_file->header->flag1,
 		pod_file->header->pad11c,pod_file->header->pad11c,
 		pod_file->header->pad120,pod_file->header->pad120,
 		pod_file->header->pad124,pod_file->header->pad124,

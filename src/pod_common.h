@@ -378,6 +378,7 @@ typedef struct pod_dir_entry_s {
 	pod_time_t file_timestamp;
 	pod_number_t file_checksum;
 } pod_dir_entry_t;
-uint32_t pod_crc(pod_byte_t* data, pod_size_t cound);
+
+#include "pod_crc.h"
 
 #endif

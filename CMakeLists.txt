@@ -20,8 +20,9 @@ endif()
 set(SOURCE_FILES
 	src/path.c
 	src/mkdir_p.c
-	src/libpodfmt.c
+	src/pod_crc.c
 	src/pod_common.c
+	src/libpodfmt.c
 	src/pod_zip.c
 	src/pod1.c
 	src/pod2.c
@@ -35,8 +36,9 @@ set(SOURCE_FILES
 set(INCLUDE_FILES
 	src/path.h
 	src/mkdir_p.h
-	src/libpodfmt.h
+	src/pod_crc.h
 	src/pod_common.h
+	src/libpodfmt.h
 	src/pod_zip.h
 	src/pod1.h
 	src/pod2.h
@@ -51,10 +53,10 @@ set(EXAMPLE_SOURCE_FILES
 )
 
 pkg_search_module(ZIP REQUIRED libzip)
-pkg_search_module(CRC REQUIRED libcrcle)
+#pkg_search_module(CRC REQUIRED libcrcle)
 
 # libpodfmt library
-add_library( ${PROJECT_NAME} ${SOURCE_FILES} ${INCLUDE_FILES}
+add_library( ${PROJECT_NAME} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}
 	${CRC_INCLUDE} ${ZIP_INCLUDE})
 target_compile_options( ${PROJECT_NAME} PUBLIC ${CRC_CFLAGS} ${ZIP_CFLAGS})
 target_include_directories(${PROJECT_NAME} PUBLIC ${CRC_INCLUDEDIR} ${ZIP_INCLUDEDIR}

@@ -1,5 +1,4 @@
 #include "pod_common.h"
-#include "libcrcle/crcle.h"
 
 /* rotate chars for progress status */
 char *rotorchar = "-/|\\";
@@ -13,15 +12,6 @@ const char POD_FORMAT_DESCRIPTION[POD_IDENT_TYPE_SIZE][POD_STRING_32] = {
 "POD1", "POD2", "POD3", "POD4", "POD5", "POD6", "Extended POD (EPD)",
 };
 
-uint32_t pod_crc(pod_byte_t* data, pod_size_t count)
-{
-	if(data == NULL || count == 0)
-	{
-		fprintf(stderr, "ERROR: pod_crc() data == NULL or count == 0!");
-		return 0;
-	}
-	return ccitt32_updcrc(0xffffffff, data, count);
-}
 
 const ssize_t POD_HEADER_SIZE[POD_IDENT_TYPE_SIZE] =
 {
