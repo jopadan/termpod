@@ -28,9 +28,9 @@ typedef struct pod_header_pod5_s
 	pod_number_t index_offset;
 	pod_number_t unknown10c;
 	pod_number_t size_index;
-	pod_number_t flag0; /* numerical boolean: -1 / 0 */
-	pod_number_t flag1; /* numerical boolean: -1 / 0 */
-	pod_number_t unknown11C;
+	pod_signed_number_t flag0; /* numerical boolean: -1 / 0 */
+	pod_signed_number_t flag1; /* numerical boolean: -1 / 0 */
+	pod_signed_number_t pad11c;
 	pod_char_t next_archive[POD_HEADER_NEXT_ARCHIVE_SIZE];
 } pod_header_pod5_t;
 

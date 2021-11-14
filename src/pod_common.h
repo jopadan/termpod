@@ -50,6 +50,7 @@ typedef uint32_t                             pod_number32_t;
 typedef int32_t                              pod_signed_number32_t;
 typedef uint16_t                             pod_number16_t;
 typedef pod_number32_t                       pod_number_t;
+typedef pod_signed_number32_t                pod_signed_number_t;
 typedef uint8_t                              pod_byte_t;
 typedef uint16_t                             pod_word_t;
 typedef uint32_t                             pod_double_word_t;

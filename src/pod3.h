@@ -29,9 +29,9 @@ typedef struct pod_header_pod3_s
 	pod_number_t index_offset; /* 0x108 */
 	pod_number_t pad10c;       /* 0x10c */
 	pod_number_t size_index;   /* 0x110 */
-	pod_number_t flag0;  /* -1 / 0  */ /* 0x114 */
-	pod_number_t flag1;  /* -1 / 0 */ /* 0x118 */
-	pod_number_t pad11c; /* 0xFFFFFFFF 0xD4009345 0x64B5C42D 0xA1FE0F74 */
+	pod_signed_number_t flag0;  /* -1 / 0  */ /* 0x114 */
+	pod_signed_number_t flag1;  /* -1 / 0 */ /* 0x118 */
+	pod_signed_number_t pad11c; /* 0xFFFFFFFF 0xD4009345 0x64B5C42D 0xA1FE0F74 */
 	pod_number_t pad120; /* 0x120 */
 	pod_number_t pad124; /* 0x124 */
 } pod_header_pod3_t;
