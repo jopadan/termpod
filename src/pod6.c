@@ -263,17 +263,17 @@ bool pod_file_pod6_print(pod_file_pod6_t* pod_file)
 
 	/* print file summary */
 	printf("\nSummary:\n \
-	        file checksum      : 0x%.8X/%.10u\n \
-	        size               : %zu\n \
+	        file checksum      : 0x%.8X/% 11u\n \
+	        size               : 0x%.8X/% 11zd\n \
 		filename           : %s\n \
 		format             : %s\n \
-		data checksum      : 0x%.8X/%.10u\n \
-		file entries       : 0x%.8X/%.10u\n \
-		version            : 0x%.8X/%.10u\n \
-		index_offset       : 0x%.8X/%.10u\n \
-		size_index         : 0x%.8X/%.10u\n",
-		pod_file->checksum,pod_file->checksum,
-		pod_file->size,
+		data checksum      : 0x%.8X/% 11u\n \
+		file entries       : 0x%.8X/% 11u\n \
+		version            : 0x%.8X/% 11u\n \
+		index_offset       : 0x%.8X/% 11u\n \
+		size_index         : 0x%.8X/% 11u\n",
+		pod_file->checksum, pod_file->checksum,
+		pod_file->size, pod_file->size,
 		pod_file->filename,
 		pod_type_str(pod_type(pod_file->header->ident)),
 		pod_crc_pod6(pod_file),pod_crc_pod6(pod_file),

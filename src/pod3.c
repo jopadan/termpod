@@ -517,7 +517,7 @@ bool pod_file_pod3_print(pod_file_pod3_t* pod_file)
 */
 	/* print file summary */
 	printf("\nSummary:\n \
-	        file checksum      : 0x%.8X/% 11d\n \
+	        file checksum      : 0x%.8X/% 11u\n \
 	        size               : 0x%.8zX/% 11zd\n \
 		filename           : %s\n \
 		format             : %s\n \
