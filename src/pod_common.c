@@ -58,6 +58,11 @@ const char* pod_type_str(pod_ident_type_t type)
 	return POD_IDENT[type];
 }
 
+const char* pod_type_desc_str(pod_ident_type_t type)
+{
+	return POD_FORMAT_DESCRIPTION[type];
+}
+
 bool is_pod(char* ident)
 {
   return (POD_IDENT_TYPE_SIZE > pod_type(ident) >= 0);

@@ -333,6 +333,7 @@ extern pod_ident_type_t pod_type(char* ident);
 extern bool is_pod(char* ident);
 extern pod_string_t pod_type_to_file_ext(int pod_type);
 extern const char* pod_type_str(pod_ident_type_t type);
+extern const char* pod_type_desc_str(pod_ident_type_t type);
 
 int pod_size_compare(const void* a, const void* b);
 /* create absolute/relative recursive directories */

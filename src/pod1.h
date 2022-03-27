@@ -51,7 +51,6 @@ typedef struct pod_file_pod_s
 	pod_byte_t* entry_data;
 	/* not serialized content */
 	pod_size_t entry_data_size;
-
 	pod_string_t filename;
 	pod_size_t size;
 	pod_number_t checksum;

@@ -279,10 +279,11 @@ bool pod_file_pod1_print(pod_file_pod1_t* pod_file)
 	}
 
 	/* print file summary */
-	printf("\nSummary:\nfile checksum      : 0x%.8X\nsize               : %zu\nfilename           : %s\nformat             : %s\ncomment            : file entries       : 0x%.8X/%.10u\n",
+	printf("\nSummary:\nfile checksum      : 0x%.8X\nsize               : %zu\nfilename           : %s\nformat             : %s\ncomment            : %s\nfile entries       : 0x%.8X/%.10u\n",
 		pod_file->checksum,
 		pod_file->size,
 		pod_file->filename,
+		pod_type_desc_str(POD1),
 		pod_file->header->comment,
 		pod_file->header->file_count,pod_file->header->file_count);
 

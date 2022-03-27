@@ -357,7 +357,7 @@ bool pod_file_pod5_print(pod_file_pod5_t* pod_file)
 		pod_file->header->size_index,pod_file->header->size_index,
 		pod_file->header->flag0,pod_file->header->flag0,
 		pod_file->header->flag1,pod_file->header->flag1,
-		pod_file->header->unknown11C,pod_file->header->unknown11C,
+		pod_file->header->pad11c,pod_file->header->pad11c,
 		pod_file->header->next_archive);
 	
 	return true;
