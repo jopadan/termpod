@@ -541,7 +541,7 @@ bool pod_file_pod3_print(pod_file_pod3_t* pod_file)
 		pod_file->checksum, pod_file->checksum,
 		pod_file->size, pod_file->size,
 		pod_file->filename,
-		pod_type_str(pod_type(pod_file->header->ident)),
+		pod_type_desc_str(pod_type(pod_file->header->ident)),
 		pod_file->header->comment,
 		pod_file->header->checksum,
 		pod_crc_pod3(pod_file),

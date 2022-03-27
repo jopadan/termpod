@@ -92,7 +92,7 @@ bool pod_file_pod2_print(pod_file_pod2_t* pod_file)
 		pod_file->checksum,
 		pod_file->size,
 		pod_file->filename,
-		pod_type_str(pod_type(pod_file->header->ident)),
+		pod_type_desc_str(pod_type(pod_file->header->ident)),
 		pod_file->header->comment,
 		pod_file->header->checksum,
 		pod_crc_pod2(pod_file),

@@ -275,7 +275,7 @@ bool pod_file_pod6_print(pod_file_pod6_t* pod_file)
 		pod_file->checksum, pod_file->checksum,
 		pod_file->size, pod_file->size,
 		pod_file->filename,
-		pod_type_str(pod_type(pod_file->header->ident)),
+		pod_type_desc_str(pod_type(pod_file->header->ident)),
 		pod_crc_pod6(pod_file),pod_crc_pod6(pod_file),
 		pod_file->header->file_count,pod_file->header->file_count,
 		pod_file->header->version,pod_file->header->version,
