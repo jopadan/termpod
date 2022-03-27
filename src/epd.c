@@ -116,6 +116,10 @@ pod_bool_t pod_file_epd_update_sizes(pod_file_epd_t* pod_file)
 	return size == expected_size;
 }
 
+pod_checksum_t  pod_file_epd_chksum(pod_file_epd_t* podfile)
+{
+	return pod_crc_epd(podfile);
+}
 pod_file_epd_t* pod_file_epd_create(pod_string_t filename)
 {
 	pod_file_epd_t* pod_file = calloc(1, sizeof(pod_file_epd_t));
@@ -143,45 +147,39 @@ pod_file_epd_t* pod_file_epd_create(pod_string_t filename)
 	{
 		fprintf(stderr, "ERROR: Could not allocate memory of size %zu for file %s!\n", pod_file->size, filename);
 		fclose(file);
-		pod_file_epd_destroy(pod_file);
-		return NULL;
+		return pod_file_epd_delete(pod_file);
 	}
 
 	if(fread(pod_file->data, POD_BYTE_SIZE, POD_IDENT_SIZE, file) != POD_IDENT_SIZE * POD_BYTE_SIZE)
 	{
 		fprintf(stderr, "ERROR: Could not read file magic %s!\n", filename);
 		fclose(file);
-		pod_file_epd_destroy(pod_file);
-		return NULL;
+		return pod_file_epd_delete(pod_file);
 	}
 	if(!pod_is_epd(pod_file->data))
 	{
 		fprintf(stderr, "ERROR: POD file format is not EPD %s!\n", filename);
 		fclose(file);
-		pod_file_epd_destroy(pod_file);
-		return NULL;
+		return pod_file_epd_delete(pod_file);
 	}
 
 	if(fread(pod_file->data + POD_IDENT_SIZE, POD_BYTE_SIZE, EPD_COMMENT_SIZE, file) != EPD_COMMENT_SIZE * POD_BYTE_SIZE)
 	{
 		fprintf(stderr, "ERROR: Could not read file comment %s!\n", filename);
 		fclose(file);
-		pod_file_epd_destroy(pod_file);
-		return NULL;
+		return pod_file_epd_delete(pod_file);
 	}
 	if(fread(pod_file->data + POD_IDENT_SIZE + EPD_COMMENT_SIZE , POD_NUMBER_SIZE, 3, file) != 3)
 	{
 		fprintf(stderr, "ERROR: Could not read file header %s!\n", filename);
 		fclose(file);
-		pod_file_epd_destroy(pod_file);
-		return NULL;
+		return pod_file_epd_delete(pod_file);
 	}
 	if(fread(pod_file->data + POD_HEADER_EPD_SIZE, POD_BYTE_SIZE, pod_file->size - POD_HEADER_EPD_SIZE, file) != (pod_file->size - POD_HEADER_EPD_SIZE ) * POD_BYTE_SIZE)
 	{
 		fprintf(stderr, "ERROR: Could not read file %s!\n", filename);
 		fclose(file);
-		pod_file_epd_destroy(pod_file);
-		return NULL;
+		return pod_file_epd_delete(pod_file);
 	}
 
 	fclose(file);
@@ -213,30 +211,38 @@ pod_file_epd_t* pod_file_epd_create(pod_string_t filename)
 	if(!pod_file_epd_update_sizes(pod_file))
 	{
 		fprintf(stderr, "ERROR: Could not update EPD file entry sizes\n");
-		pod_file_epd_destroy(pod_file);
-		return NULL;
+		pod_file = pod_file_epd_delete(pod_file);
 	}
 
 	return pod_file;
 }
 
-bool pod_file_epd_destroy(pod_file_epd_t* podfile)
+pod_file_epd_t* pod_file_epd_delete(pod_file_epd_t* podfile)
 {
-	if(!podfile)
-	{
-		fprintf(stderr, "ERROR: could not free podfile == NULL!\n");
-		return false;
-	}
-
-	if(podfile->gap_sizes)
-		free(podfile->gap_sizes);
-	if(podfile->data)
-		free(podfile->data);
-	if(podfile->filename);
-		free(podfile->filename);
 	if(podfile)
+	{
+		if(podfile->gap_sizes)
+		{
+			free(podfile->gap_sizes);
+			podfile->gap_sizes = NULL;
+		}
+		if(podfile->data)
+		{
+			free(podfile->data);
+			podfile->data = NULL;
+		}
+		if(podfile->filename)
+		{
+			free(podfile->filename);
+			podfile->filename = NULL;
+		}
 		free(podfile);
-	return true;
+		podfile = NULL;
+	}
+	else
+		fprintf(stderr, "ERROR: could not free podfile == NULL!\n");
+
+	return podfile;
 }
 
 

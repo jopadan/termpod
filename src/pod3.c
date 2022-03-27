@@ -254,6 +254,11 @@ pod_file_pod3_t* pod_file_pod3_create(pod_string_t filename)
 }
 */
 
+pod_checksum_t   pod_file_pod3_chksum(pod_file_pod3_t* podfile)
+{
+	return pod_crc_pod3(podfile);
+}
+
 pod_file_pod3_t* pod_file_pod3_create(pod_string_t filename) {
     pod_number_t ecx4;
     pod_number_t edx5;
@@ -313,8 +318,7 @@ pod_file_pod3_t* pod_file_pod3_create(pod_string_t filename) {
 	    fprintf(stdout, "\rLoading POD file... %lu/%lu FAILED!\n", read, pod_file->size);
 	    fflush(stdout);
 	    fclose(file);
-	    pod_file_pod3_destroy(pod_file);
-	    return NULL;
+	    return pod_file_pod3_delete(pod_file);
     }
 
     fprintf(stdout, "\rLoading POD file... %lu/%lu SUCCESS!\n", read, sb.st_size, rotorchar[rotor]);
@@ -342,8 +346,7 @@ pod_file_pod3_t* pod_file_pod3_create(pod_string_t filename) {
 	    fprintf(stdout, "\rReading POD file magic... %u/%u FAILED!\n", 0,4);
 	    fflush(stdout);
 	    fclose(file);
-	    pod_file_pod3_destroy(pod_file);
-	    return NULL;
+	    return pod_file_pod3_delete(pod_file);
     }
     else
     	fprintf(stdout, "\rReading POD file magic... %u/%u SUCCESS!\n", 4,4);
@@ -430,30 +433,38 @@ pod_file_pod3_t* pod_file_pod3_create(pod_string_t filename) {
     if(!pod_file_pod3_update_sizes(pod_file))
     {
 	    fprintf(stderr, "ERROR: Could not update POD3 file entry sizes\n");
-	    pod_file_pod3_destroy(pod_file);
-	    return NULL;
+	    return pod_file_pod3_delete(pod_file);
     }
     return pod_file;
 }
 
 
-bool pod_file_pod3_destroy(pod_file_pod3_t* podfile)
+pod_file_pod3_t* pod_file_pod3_delete(pod_file_pod3_t* podfile)
 {
-	if(!podfile)
-	{
-		fprintf(stderr, "ERROR: could not free podfile == NULL!\n");
-		return false;
-	}
-
-	if(podfile->gap_sizes)
-		free(podfile->gap_sizes);
-	if(podfile->data)
-		free(podfile->data);
-	if(podfile->filename);
-		free(podfile->filename);
 	if(podfile)
+	{
+		if(podfile->gap_sizes)
+		{
+			free(podfile->gap_sizes);
+			podfile->gap_sizes = NULL;
+		}
+		if(podfile->data)
+		{
+			free(podfile->data);
+			podfile->data = NULL;
+		}
+		if(podfile->filename)
+		{
+			free(podfile->filename);
+			podfile->data = NULL;
+		}
 		free(podfile);
-	return true;
+		podfile = NULL;
+	}
+	else
+		fprintf(stderr, "ERROR: pod_file_pod3_delete(podfile) podfile already equals NULL!\n");
+
+	return podfile;
 }
 
 bool pod_audit_entry_pod3_print(pod_audit_entry_pod3_t* audit)

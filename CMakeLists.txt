@@ -4,6 +4,16 @@ project(podfmt LANGUAGES C)
 set(PROJECT_VERSION 1.0)
 set(PROJECT_DESCRIPTION "POD game archive format library written in C for all existing versions")
 
+if(CMAKE_C_COMPILER_LOADED)
+  include (CheckIncludeFile)
+  include (CheckCSourceCompiles)
+elseif(CMAKE_CXX_COMPILER_LOADED)
+  include (CheckIncludeFileCXX)
+  include (CheckCXXSourceCompiles)
+else()
+  message(FATAL_ERROR "FindMath only works if either C or CXX language is enabled")
+endif()
+
 include(GNUInstallDirs)
 include(FindPkgConfig)
 
@@ -16,6 +26,9 @@ option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 else()
 option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 endif()
+
+#set( CMAKE_C_STANDARD_REQUIRED ON )
+#set( CMAKE_C_STANDARD gnu2x )
 
 set(SOURCE_FILES
 	src/path.c

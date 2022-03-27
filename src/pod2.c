@@ -83,7 +83,7 @@ bool pod_file_pod2_print(pod_file_pod2_t* pod_file)
 		if(!pod_audit_entry_pod2_print(&pod_file->audit_trail[i]))
 		{
 			fprintf(stderr, "ERROR: pod_audit_entry_pod2_print() failed!");
-			pod_file_pod2_destroy(pod_file);
+			pod_file = pod_file_pod2_delete(pod_file);
 			return false;
 		}
 	}
@@ -103,23 +103,36 @@ bool pod_file_pod2_print(pod_file_pod2_t* pod_file)
 	return true;
 }
 
-bool pod_file_pod2_destroy(pod_file_pod2_t* podfile)
+pod_file_pod2_t* pod_file_pod2_delete(pod_file_pod2_t* podfile)
 {
-	if(!podfile)
-	{
-		fprintf(stderr, "ERROR: could not free podfile == NULL!\n");
-		return false;
-	}
-
-	if(podfile->data)
-		free(podfile->data);
-	if(podfile->filename);
-		free(podfile->filename);
 	if(podfile)
-		free(podfile);
-	return true;
+	{
+		if(podfile->data)
+		{
+			free(podfile->data);
+			podfile->data = NULL;
+		}
+		if(podfile->filename)
+		{
+			free(podfile->filename);
+			podfile->filename = NULL;
+		}
+		if(podfile)
+		{
+			free(podfile);
+			podfile = NULL;
+		}
+	}
+	else
+		fprintf(stderr, "ERROR: pod_file_pod2_delete(podfile) podfile already equals NULL!\n");
+
+	return podfile;
 }
 
+pod_checksum_t   pod_file_pod2_chksum(pod_file_pod2_t* podfile)
+{
+	return pod_crc_pod2(podfile);
+}
 pod_file_pod2_t* pod_file_pod2_create(pod_string_t filename)
 {
 	pod_file_pod2_t* pod_file = calloc(1, sizeof(pod_file_pod2_t));
@@ -148,16 +161,14 @@ pod_file_pod2_t* pod_file_pod2_create(pod_string_t filename)
 	{
 		fprintf(stderr, "ERROR: Could not allocate memory of size %zu for file %s!\n", pod_file->size, filename);
 		fclose(file);
-		pod_file_pod2_destroy(pod_file);
-		return NULL;
+		return pod_file_pod2_delete(pod_file);
 	}
 
 	if(fread(pod_file->data, POD_BYTE_SIZE, pod_file->size, file) != pod_file->size * POD_BYTE_SIZE)
 	{
 		fprintf(stderr, "ERROR: Could not read file %s!\n", filename);
 		fclose(file);
-		pod_file_pod2_destroy(pod_file);
-		return NULL;
+		return pod_file_pod2_delete(pod_file);
 	}
 
 	fclose(file);

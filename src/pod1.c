@@ -29,6 +29,10 @@ uint32_t pod_crc_pod1_entry(pod_file_pod1_t* file, pod_number_t entry_index)
 }
  
 
+pod_checksum_t   pod_file_pod1_chksum(pod_file_pod1_t* podfile)
+{
+	return pod_crc_pod1(podfile);
+}
 pod_file_pod1_t* pod_file_pod1_create(pod_string_t filename)
 {
 	pod_file_pod1_t* pod_file = calloc(1, sizeof(pod_file_pod1_t));
@@ -57,7 +61,7 @@ pod_file_pod1_t* pod_file_pod1_create(pod_string_t filename)
 	{
 		fprintf(stderr, "ERROR: Could not allocate memory of size %zu for file %s!\n", pod_file->size, filename);
 		fclose(file);
-		pod_file_pod1_destroy(pod_file);
+		pod_file_pod1_delete(pod_file);
 		return NULL;
 	}
 
@@ -65,7 +69,7 @@ pod_file_pod1_t* pod_file_pod1_create(pod_string_t filename)
 	{
 		fprintf(stderr, "ERROR: Could not read file %s!\n", filename);
 		fclose(file);
-		pod_file_pod1_destroy(pod_file);
+		pod_file_pod1_delete(pod_file);
 		return NULL;
 	}
 
@@ -241,21 +245,28 @@ bool pod_file_pod1_extract(pod_file_pod1_t* pod_file, pod_string_t dst, pod_bool
 	chdir(cwd);
 	return true;
 }
-bool pod_file_pod1_destroy(pod_file_pod1_t* pod_file)
-{
-	if(!pod_file)
-	{
-		fprintf(stderr, "ERROR: could not free pod_file == NULL!\n");
-		return false;
-	}
 
-	if(pod_file->data)
-		free(pod_file->data);
-	if(pod_file->filename);
-		free(pod_file->filename);
+pod_file_pod1_t* pod_file_pod1_delete(pod_file_pod1_t* pod_file)
+{
 	if(pod_file)
+	{
+		if(pod_file->data)
+		{
+			free(pod_file->data);
+			pod_file->data;
+		}
+		if(pod_file->filename)
+		{
+			free(pod_file->filename);
+			pod_file->filename = NULL;
+		}
 		free(pod_file);
-	return true;
+		pod_file = NULL;
+	}
+	else
+		fprintf(stderr, "ERROR: could not free pod_file == NULL!\n");
+
+	return pod_file;
 }
 
 bool pod_file_pod1_print(pod_file_pod1_t* pod_file)
