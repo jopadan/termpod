@@ -1,6 +1,9 @@
 #include "libpodfmt.h"
 
-int              pod_file_typeid(pod_file_type_t file) { return file.pod1 != NULL ? pod_type(file.ident) : -1; }
+int              pod_file_typeid(pod_file_type_t file)
+{
+	return ((file.pod1 != NULL) ? pod_type((char*)file.pod1->header) : POD_IDENT_TYPE_SIZE);
+}
 
 pod_file_type_t pod_file_create(pod_path_t name)
 {

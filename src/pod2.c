@@ -3,7 +3,7 @@
 
 const char pod2_audit_action_string[POD2_AUDIT_ACTION_SIZE][8] = { "Add", "Remove", "Change" };
 
-uint32_t pod_crc_pod2(pod_file_pod2_t* file)
+pod_checksum_t pod_crc_pod2(pod_file_pod2_t* file)
 {
 	if(file == NULL || file->path_data == NULL)
 	{
@@ -14,7 +14,7 @@ uint32_t pod_crc_pod2(pod_file_pod2_t* file)
 	return pod_crc(file->data + POD_IDENT_SIZE + POD_HEADER_CHECKSUM_SIZE, file->size - POD_IDENT_SIZE - POD_HEADER_CHECKSUM_SIZE);
 }
 
-uint32_t pod_crc_pod2_entry(pod_file_pod2_t* file, pod_number_t entry_index)
+pod_checksum_t pod_crc_pod2_entry(pod_file_pod2_t* file, pod_number_t entry_index)
 {
 	if(file == NULL || file->entry_data == NULL)
 	{
@@ -25,6 +25,10 @@ uint32_t pod_crc_pod2_entry(pod_file_pod2_t* file, pod_number_t entry_index)
 	return pod_crc(file->data + file->entries[entry_index].offset, file->entries[entry_index].size);
 }
  
+pod_checksum_t   pod_file_pod2_chksum(pod_file_pod2_t* podfile)
+{
+	return pod_crc_pod2(podfile);
+}
 
 bool pod_is_pod2(char* ident)
 {
@@ -87,6 +91,7 @@ bool pod_file_pod2_print(pod_file_pod2_t* pod_file)
 			return false;
 		}
 	}
+
 	/* print file summary */
 	printf("\nSummary:\nfile checksum      : 0x%.8X\nsize               : %zu\nfilename           : %s\nformat             : %s\ncomment            : %s\ndata checksum      : 0x%.8X/0x%.8X\nfile entries       : 0x%.8X/%.10u\naudit entries      : 0x%.8X/%.10u\n",
 		pod_file->checksum,
@@ -105,23 +110,26 @@ bool pod_file_pod2_print(pod_file_pod2_t* pod_file)
 
 pod_file_pod2_t* pod_file_pod2_delete(pod_file_pod2_t* podfile)
 {
-	if(podfile)
+	if(podfile != NULL)
 	{
 		if(podfile->data)
 		{
 			free(podfile->data);
 			podfile->data = NULL;
+			podfile->header = NULL;
+			podfile->entries = NULL;
+			podfile->path_data = NULL;
+			podfile->entry_data = NULL;
+			podfile->audit_trail = NULL;
 		}
 		if(podfile->filename)
 		{
 			free(podfile->filename);
 			podfile->filename = NULL;
 		}
-		if(podfile)
-		{
-			free(podfile);
-			podfile = NULL;
-		}
+
+		free(podfile);
+		podfile = NULL;
 	}
 	else
 		fprintf(stderr, "ERROR: pod_file_pod2_delete(podfile) podfile already equals NULL!\n");
@@ -129,10 +137,6 @@ pod_file_pod2_t* pod_file_pod2_delete(pod_file_pod2_t* podfile)
 	return podfile;
 }
 
-pod_checksum_t   pod_file_pod2_chksum(pod_file_pod2_t* podfile)
-{
-	return pod_crc_pod2(podfile);
-}
 pod_file_pod2_t* pod_file_pod2_create(pod_string_t filename)
 {
 	pod_file_pod2_t* pod_file = calloc(1, sizeof(pod_file_pod2_t));

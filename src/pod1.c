@@ -6,7 +6,7 @@ bool pod_is_pod1(char* ident)
   return (POD1 == pod_type(ident) >= 0);
 }
 
-uint32_t pod_crc_pod1(pod_file_pod1_t* file)
+pod_checksum_t pod_crc_pod1(pod_file_pod1_t* file)
 {
 	if(file == NULL)
 	{
@@ -17,7 +17,7 @@ uint32_t pod_crc_pod1(pod_file_pod1_t* file)
 	return pod_crc(file->data + POD_IDENT_SIZE + POD_HEADER_CHECKSUM_SIZE, file->size - POD_IDENT_SIZE - POD_HEADER_CHECKSUM_SIZE);
 }
 
-uint32_t pod_crc_pod1_entry(pod_file_pod1_t* file, pod_number_t entry_index)
+pod_checksum_t pod_crc_pod1_entry(pod_file_pod1_t* file, pod_number_t entry_index)
 {
 	if(file == NULL || file->entry_data == NULL)
 	{
@@ -33,6 +33,7 @@ pod_checksum_t   pod_file_pod1_chksum(pod_file_pod1_t* podfile)
 {
 	return pod_crc_pod1(podfile);
 }
+
 pod_file_pod1_t* pod_file_pod1_create(pod_string_t filename)
 {
 	pod_file_pod1_t* pod_file = calloc(1, sizeof(pod_file_pod1_t));

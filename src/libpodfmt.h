@@ -21,7 +21,6 @@ typedef union pod_file_type_u
 	pod_file_pod5_t* pod5;
 	pod_file_pod6_t* pod6;
 	pod_file_epd_t*  epd;
-	pod_char_t       ident[__WORDSIZE];
 } pod_file_type_t;
 
 typedef union pod_entry_type_u

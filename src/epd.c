@@ -7,7 +7,7 @@ bool pod_is_epd(char* ident)
 	return (type >= 0 && type == EPD);
 }
 
-uint32_t pod_crc_epd(pod_file_epd_t* file)
+pod_checksum_t pod_crc_epd(pod_file_epd_t* file)
 {
 	if(file == NULL)
 	{
@@ -20,7 +20,7 @@ uint32_t pod_crc_epd(pod_file_epd_t* file)
 	return pod_crc(start, size);
 }
 
-uint32_t pod_crc_epd_entry(pod_file_epd_t* file, pod_number_t entry_index)
+pod_checksum_t pod_crc_epd_entry(pod_file_epd_t* file, pod_number_t entry_index)
 {
 	if(file == NULL || file->entry_data == NULL)
 	{
@@ -31,6 +31,11 @@ uint32_t pod_crc_epd_entry(pod_file_epd_t* file, pod_number_t entry_index)
 	pod_byte_t* start = (pod_byte_t*)file->data + file->entries[entry_index].offset;
 	pod_number_t size = file->entries[entry_index].size;
 	return pod_crc(start, size);
+}
+
+pod_checksum_t  pod_file_epd_chksum(pod_file_epd_t* podfile)
+{
+	return pod_crc_epd(podfile);
 }
 
 pod_signed_number32_t pod_entry_epd_adjacent_diff(const void* a, const void* b)
@@ -116,10 +121,6 @@ pod_bool_t pod_file_epd_update_sizes(pod_file_epd_t* pod_file)
 	return size == expected_size;
 }
 
-pod_checksum_t  pod_file_epd_chksum(pod_file_epd_t* podfile)
-{
-	return pod_crc_epd(podfile);
-}
 pod_file_epd_t* pod_file_epd_create(pod_string_t filename)
 {
 	pod_file_epd_t* pod_file = calloc(1, sizeof(pod_file_epd_t));

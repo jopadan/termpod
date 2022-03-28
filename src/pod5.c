@@ -8,7 +8,7 @@ bool pod_is_pod5(char* ident)
   return (POD5 == pod_type(ident) >= 0);
 }
 
-uint32_t pod_crc_pod5(pod_file_pod5_t* file)
+pod_checksum_t pod_crc_pod5(pod_file_pod5_t* file)
 {
 	if(file == NULL || file->path_data == NULL)
 	{
@@ -21,7 +21,7 @@ uint32_t pod_crc_pod5(pod_file_pod5_t* file)
 	return pod_crc(start, size);
 }
 
-uint32_t pod_crc_pod5_entry(pod_file_pod5_t* file, pod_number_t entry_index)
+pod_checksum_t pod_crc_pod5_entry(pod_file_pod5_t* file, pod_number_t entry_index)
 {
 	if(file == NULL || file->entry_data == NULL)
 	{
@@ -35,7 +35,7 @@ uint32_t pod_crc_pod5_entry(pod_file_pod5_t* file, pod_number_t entry_index)
 	return pod_crc(start, size);
 }
 
-uint32_t pod_crc_pod5_audit_entry(pod_file_pod5_t* file, pod_number_t audit_entry_index)
+pod_checksum_t pod_crc_pod5_audit_entry(pod_file_pod5_t* file, pod_number_t audit_entry_index)
 {
 	if(file == NULL || file->entry_data == NULL)
 	{
@@ -48,6 +48,12 @@ uint32_t pod_crc_pod5_audit_entry(pod_file_pod5_t* file, pod_number_t audit_entr
 
 	return pod_crc(start, size);
 }
+
+pod_checksum_t   pod_file_pod5_chksum(pod_file_pod5_t* podfile)
+{
+	return pod_crc_pod5(podfile);
+}
+
 pod_signed_number32_t pod_entry_pod5_adjacent_diff(const void* a, const void* b)
 {
 	
@@ -130,10 +136,6 @@ pod_bool_t pod_file_pod5_update_sizes(pod_file_pod5_t* pod_file)
 	return size == expected_size;
 }
 
-pod_checksum_t   pod_file_pod5_chksum(pod_file_pod5_t* podfile)
-{
-	return pod_crc_pod5(podfile);
-}
 pod_file_pod5_t* pod_file_pod5_create(pod_string_t filename)
 {
 	pod_file_pod5_t* pod_file = calloc(1, sizeof(pod_file_pod5_t));

@@ -8,7 +8,7 @@ bool pod_is_pod3(char* ident)
   return (POD3 == pod_type(ident));
 }
 
-uint32_t pod_crc_pod3(pod_file_pod3_t* file)
+pod_checksum_t pod_crc_pod3(pod_file_pod3_t* file)
 {
 	if(file == NULL || file->path_data == NULL)
 	{
@@ -21,7 +21,7 @@ uint32_t pod_crc_pod3(pod_file_pod3_t* file)
 	return pod_crc(file->data + offset, size);
 }
 
-uint32_t pod_crc_pod3_off(pod_file_pod3_t* file, pod_size_t offset)
+pod_checksum_t pod_crc_pod3_off(pod_file_pod3_t* file, pod_size_t offset)
 {
 	if(file == NULL || file->path_data == NULL)
 	{
@@ -33,7 +33,7 @@ uint32_t pod_crc_pod3_off(pod_file_pod3_t* file, pod_size_t offset)
 	return pod_crc(file->data + offset, size);
 }
 
-uint32_t pod_crc_pod3_entry(pod_file_pod3_t* file, pod_number_t entry_index)
+pod_checksum_t pod_crc_pod3_entry(pod_file_pod3_t* file, pod_number_t entry_index)
 {
 	if(file == NULL || file->entry_data == NULL)
 	{
@@ -47,7 +47,7 @@ uint32_t pod_crc_pod3_entry(pod_file_pod3_t* file, pod_number_t entry_index)
 	return pod_crc(start, size);
 }
 
-uint32_t pod_crc_pod3_audit_entry(pod_file_pod3_t* file, pod_number_t audit_entry_index)
+pod_checksum_t pod_crc_pod3_audit_entry(pod_file_pod3_t* file, pod_number_t audit_entry_index)
 {
 	if(file == NULL || file->entry_data == NULL)
 	{
@@ -60,6 +60,12 @@ uint32_t pod_crc_pod3_audit_entry(pod_file_pod3_t* file, pod_number_t audit_entr
 
 	return pod_crc(start, size);
 }
+
+pod_checksum_t   pod_file_pod3_chksum(pod_file_pod3_t* podfile)
+{
+	return pod_crc_pod3(podfile);
+}
+
 pod_signed_number32_t pod_entry_pod3_adjacent_diff(const void* a, const void* b)
 {
 	
@@ -253,11 +259,6 @@ pod_file_pod3_t* pod_file_pod3_create(pod_string_t filename)
 	return pod_file;
 }
 */
-
-pod_checksum_t   pod_file_pod3_chksum(pod_file_pod3_t* podfile)
-{
-	return pod_crc_pod3(podfile);
-}
 
 pod_file_pod3_t* pod_file_pod3_create(pod_string_t filename) {
     pod_number_t ecx4;
