@@ -132,6 +132,33 @@ pod_checksum_t   pod_file_chksum(pod_file_type_t file)
 pod_ssize_t      pod_file_write(pod_file_type_t file, pod_path_t dst_name);
 pod_file_type_t  pod_file_reset(pod_file_type_t file);
 pod_file_type_t  pod_file_merge(pod_file_type_t file, pod_file_type_t src);
+bool             pod_file_print(pod_file_type_t file)
+{
+	if(file.pod1 != NULL)
+	{
+		switch(pod_file_typeid(file))
+		{
+			case POD1:
+				return pod_file_pod1_print(file.pod1);
+			case POD2:
+				return pod_file_pod2_print(file.pod2);
+			case POD3:
+				return pod_file_pod3_print(file.pod3);
+			case POD4:
+				return pod_file_pod4_print(file.pod4);
+			case POD5:
+				return pod_file_pod5_print(file.pod5);
+			case POD6:
+				return pod_file_pod6_print(file.pod6);
+			case EPD:
+				return pod_file_epd_print(file.epd);
+			default:
+				fprintf(stderr, "ERROR: pod_file_print() unknown file format!\n");
+				return false;
+		}
+	}
+	return true;
+}
 
 /* access entries by name and/or number */
 pod_byte_t*      pod_file_entry_data_get(pod_file_type_t file, pod_path_t entry_name, pod_number_t entry_number);

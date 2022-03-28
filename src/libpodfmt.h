@@ -43,6 +43,7 @@ int              pod_file_typeid(pod_file_type_t file);
 pod_ssize_t      pod_file_write(pod_file_type_t file, pod_path_t dst_name);
 pod_file_type_t  pod_file_reset(pod_file_type_t file);
 pod_file_type_t  pod_file_merge(pod_file_type_t file, pod_file_type_t src);
+bool             pod_file_print(pod_file_type_t file);
 
 /* access entries by name and/or number */
 pod_byte_t*      pod_file_entry_data_get(pod_file_type_t file, pod_path_t entry_name, pod_number_t entry_number);
