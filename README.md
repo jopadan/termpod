@@ -1,5 +1,5 @@
-# libpodfmt
-POD game archive format library written in C for all existing versions
+# libtermpod
+POD file format Terminal Reality game archive library written in C for all existing versions
 
 # Dependencies
 - [libzip] (http://github.com/nih-at/libzip/)
@@ -7,7 +7,7 @@ POD game archive format library written in C for all existing versions
 # Building
 
 ```c
-cmake .
+cmake . --install-prefix
 make
 make install
 ```
