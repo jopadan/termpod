@@ -12,6 +12,16 @@ const char POD_FORMAT_DESCRIPTION[POD_IDENT_TYPE_SIZE][POD_STRING_32] = {
 "POD1", "POD2", "POD3", "POD4", "POD5", "POD6", "Extended POD (EPD)",
 };
 
+const ssize_t POD_FILENAME_SIZE[POD_IDENT_TYPE_SIZE] =
+{
+	POD_DIR_ENTRY_POD1_FILENAME_SIZE,
+	POD_DIR_ENTRY_POD2_FILENAME_SIZE,
+	POD_DIR_ENTRY_POD3_FILENAME_SIZE,
+	POD_DIR_ENTRY_POD4_FILENAME_SIZE,
+	POD_DIR_ENTRY_POD5_FILENAME_SIZE,
+	POD_DIR_ENTRY_POD6_FILENAME_SIZE,
+	POD_DIR_ENTRY_EPD_FILENAME_SIZE,
+};
 
 const ssize_t POD_HEADER_SIZE[POD_IDENT_TYPE_SIZE] =
 {
@@ -63,7 +73,7 @@ const char* pod_type_desc_str(pod_ident_type_t type)
 	return POD_FORMAT_DESCRIPTION[type];
 }
 
-bool is_pod(char* ident)
+bool pod_is_pod(char* ident)
 {
   return (POD_IDENT_TYPE_SIZE > pod_type(ident) >= 0);
 }

@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 3.0)
-project(podfmt LANGUAGES C)
+project(termpod LANGUAGES C)
 
 set(PROJECT_VERSION 1.0)
 set(PROJECT_DESCRIPTION "POD game archive format library written in C for all existing versions")
+
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 if(CMAKE_C_COMPILER_LOADED)
   include (CheckIncludeFile)
@@ -35,7 +37,7 @@ set(SOURCE_FILES
 	src/mkdir_p.c
 	src/pod_crc.c
 	src/pod_common.c
-	src/libpodfmt.c
+	src/termpod.c
 	src/pod_zip.c
 	src/pod1.c
 	src/pod2.c
@@ -51,7 +53,7 @@ set(INCLUDE_FILES
 	src/mkdir_p.h
 	src/pod_crc.h
 	src/pod_common.h
-	src/libpodfmt.h
+	src/termpod.h
 	src/pod_zip.h
 	src/pod1.h
 	src/pod2.h
@@ -68,38 +70,63 @@ set(EXAMPLE_SOURCE_FILES
 pkg_search_module(ZIP REQUIRED libzip)
 #pkg_search_module(CRC REQUIRED libcrcle)
 
-# libpodfmt library
+# termpod library
 add_library( ${PROJECT_NAME} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}
 	${CRC_INCLUDE} ${ZIP_INCLUDE})
 target_compile_options( ${PROJECT_NAME} PUBLIC ${CRC_CFLAGS} ${ZIP_CFLAGS})
 target_include_directories(${PROJECT_NAME} PUBLIC ${CRC_INCLUDEDIR} ${ZIP_INCLUDEDIR}
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
-			$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/lib${PROJECT_NAME}>
+			$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}>
 			)
 target_link_libraries( ${PROJECT_NAME} PUBLIC ${CRC_LIBRARIES} ${ZIP_LIBRARIES} )
 
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${CRC_INCLUDEDIR} ${ZIP_INCLUDEDIR}
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
-			$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/lib${PROJECT_NAME}>
+			$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}>
 			)
 set(install_prefix "${CMAKE_INSTALL_PREFIX}")
 set(install_libdir "${CMAKE_INSTALL_LIBDIR}")
 set(install_includedir "${CMAKE_INSTALL_INCLUDEDIR}")
+set(config_install_dir "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
+set(project_config "${generated_dir}/${PROJECT_NAME}Config.cmake")
+set(namespace "${PROJECT_NAME}::")
+
+# Include module with fuction 'write_basic_package_version_file'
+include(CMakePackageConfigHelpers)
+
+# Configure '<PROJECT-NAME>Config.cmake'
+# Use variables:
+#   * TARGETS_EXPORT_NAME
+#   * PROJECT_NAME
+configure_package_config_file(
+	"${CMAKE_CURRENT_SOURCE_DIR}/cmake/Config.cmake.in"
+	"${project_config}"
+	INSTALL_DESTINATION "${config_install_dir}"
+)
 
 configure_file(lib${PROJECT_NAME}.pc.in ${PROJECT_BINARY_DIR}/lib${PROJECT_NAME}.pc @ONLY)
 
 set(ENV{PKG_CONFIG_PATH} "${PROJECT_BINARY_DIR}:$ENV{PKG_CONFIG_PATH}")
 
-install(TARGETS podfmt EXPORT ${PROJECT_NAME}Config
+install(TARGETS ${PROJECT_NAME} EXPORT TermPODExport
 	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 	PUBLIC_HEADER DESTINATION
-	${CMAKE_INSTALL_INCLUDEDIR}/lib${PROJECT_NAME}
+	${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
 	)
 
+install(EXPORT TermPODExport
+	DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/TermPOD"
+	FILE ${project_config}
+	NAMESPACE TermPOD::
+)
+
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindTermPOD.cmake DESTINATION
+	${CMAKE_INSTALL_LIBDIR}/cmake/TermPOD)
+
 install(FILES ${INCLUDE_FILES} DESTINATION
-	${CMAKE_INSTALL_INCLUDEDIR}/lib${PROJECT_NAME}/)
+	${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/)
 
 install(FILES ${PROJECT_BINARY_DIR}/lib${PROJECT_NAME}.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig/)

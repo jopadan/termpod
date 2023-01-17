@@ -28,7 +28,6 @@
 #include <inttypes.h>
 #include <stdbool.h>
 #include <sys/types.h>
-#include <math.h>
 #include <time.h>
 #include <assert.h>
 #include <libgen.h> 
@@ -68,7 +67,7 @@ typedef ssize_t                              pod_ssize_t;
 typedef fpos_t                               pod_fpos_t;
 typedef off_t                                pod_off_t;
 /* character and string types */
-typedef int8_t                               pod_char_t;
+typedef char                                 pod_char_t;
 typedef wchar_t                              pod_wchar_t;
 typedef pod_char_t*                          pod_string_t;
 typedef wchar_t*                             pod_wchar_string_t;
@@ -111,6 +110,7 @@ enum pod_string_size_t
 	POD_STRING_96=96, POD_STRING_128=128, POD_STRING_256=256, POD_STRING_264=264,
 	POD_STRING_SIZE_SIZE=9,
 };
+
 typedef enum pod_string_size_t pod_string_size_t;
 
 #define POD_COMMENT_SIZE                     POD_STRING_80                 /* comment length of POD format   */
@@ -123,7 +123,6 @@ enum pod_ident_type_t
 	EPD, POD_IDENT_TYPE_SIZE, 
 };
 typedef enum pod_ident_type_t pod_ident_type_t;
-
 #define POD_IDENT_SIZE                       POD_STRING_4             /* file magic ident length        */
 #define POD_IDENT_TYPE_SIZE                  (EPD + 1)                /* number of POD format types     */
 
@@ -331,7 +330,7 @@ extern const char POD_IDENT[ POD_IDENT_TYPE_SIZE ][ POD_IDENT_SIZE + 1 ];
 
 
 extern pod_ident_type_t pod_type(char* ident);
-extern bool is_pod(char* ident);
+extern bool pod_is_pod(char* ident);
 extern pod_string_t pod_type_to_file_ext(int pod_type);
 extern const char* pod_type_str(pod_ident_type_t type);
 extern const char* pod_type_desc_str(pod_ident_type_t type);
@@ -369,7 +368,7 @@ extern pod_time64_t pod_time_to_time64(time_t t);
 
 extern const ssize_t POD_DIR_ENTRY_SIZE[POD_IDENT_TYPE_SIZE];
 extern const ssize_t POD_HEADER_SIZE[POD_IDENT_TYPE_SIZE];
-
+extern const ssize_t POD_FILENAME_SIZE[POD_IDENT_TYPE_SIZE];
 
 typedef struct pod_dir_entry_s {
 	pod_char_t* filename[POD_IDENT_TYPE_SIZE];

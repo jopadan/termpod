@@ -1,0 +1,6 @@
+@PACKAGE_INIT@
+
+include("${CMAKE_CURRENT_LIST_DIR}/termpod.cmake")
+get_target_property(TERMPOD_INCLUDE_PATH TermPOD::TermPOD INTERFACE_INCLUDE_DIRECTORIES)
+get_target_property(TERMPOD_LIBRARIES TermPOD::TermPOD INTERFACE_LINK_LIBRARIES)
+check_required_components("@PROJECT_NAME@")

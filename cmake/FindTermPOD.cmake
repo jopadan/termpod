@@ -1,0 +1,50 @@
+include(GNUInstallDirs)
+include(FindPackageHandleStandardArgs)
+
+SET(TERMPOD_FOUND FALSE)
+
+find_path(TERMPOD_INCLUDE_DIR termpod.h
+  HINTS
+    ENV TERMPODDIR
+    PATH_SUFFIXES termpod
+  PATHS
+  ~/Library/Frameworks
+  /Library/Frameworks
+  /opt
+  ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+find_library(TERMPOD_LIBRARY
+  NAMES termpod
+  HINTS
+    ENV TERMPODDIR
+    PATH_SUFFIXES
+  PATHS
+  ~/Library/Frameworks
+  /Library/Frameworks
+  /opt
+  ${CMAKE_INSTALL_LIBDIR}
+)
+
+MARK_AS_ADVANCED(TERMPOD_LIBRARY TERMPOD_INCLUDE_DIR)
+
+message("${TERMPOD_LIBRARY}")
+message("${TERMPOD_INCLUDE_LIBRARY}")
+
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(TermPOD DEFAULT_MSG TERMPOD_LIBRARY TERMPOD_INCLUDE_DIR)
+
+set(TERMPOD_FOUND ${TermPOD_FOUND}) 
+message(${TERMPOD_FOUND})
+
+if(TERMPOD_FOUND)
+	set(TERMPOD_LIBRARIES ${TERMPOD_LIBRARY})
+	set(TERMPOD_INCLUDE_DIRS ${TERMPOD_INCLUDE_DIR})
+	if(NOT TARGET TermPOD::termpod)
+		add_library(TermPOD::termpod INTERFACE IMPORTED)
+		set_target_properties(TermPOD::termpod PROPERTIES
+		INTERFACE_INCLUDE_DIRECTORIES "${TERMPOD_INCLUDE_DIR}"
+		INTERFACE_LINK_LIBRARIES "${TERMPOD_LIBRARIES}")
+  	endif()
+endif()
+	
+unset(_cmake_find_termpod_output)

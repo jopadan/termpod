@@ -2,9 +2,9 @@
 #define _POD_ZIP_H
 
 #include <zip.h>
-#include <pod4.h>
-#include <pod5.h>
-#include <pod6.h>
+#include "pod4.h"
+#include "pod5.h"
+#include "pod6.h"
 
 pod_number_t pod_zip_crc_ccitt32(pod_byte_t* src, pod_size_t compressed);
 pod_number_t pod_zip_crc(pod_byte_t* src, pod_size_t compressed);
