@@ -1,0 +1,11 @@
+prefix=@install_prefix@
+exe_prefix=${prefix}
+libdir=${prefix}/@install_libdir@
+includedir=${prefix}/@install_includedir@
+
+Name: @PROJECT_NAME@
+Description: @PROJECT_DESCRIPTION@
+Version: @PROJECT_VERSION@
+
+Requires:
+Cflags: -I${includedir} -I${includedir}/@PROJECT_NAME@

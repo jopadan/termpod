@@ -1,0 +1,9 @@
+[submodule "external/crcle"]
+	path = external/crcle
+	url = https://github.com/jopadan/crcle
+[submodule "external/libzippp"]
+	path = external/libzippp
+	url = https://github.com/ctabin/libzippp
+[submodule "external/stdtype"]
+	path = external/stdtype
+	url = https://github.com/jopadan/stdtype
