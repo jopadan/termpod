@@ -9,9 +9,9 @@ void parse_args(int argc, char** argv);
 int main(int argc, char** argv)
 {
 	parse_args(argc, argv);
-	if(optind < argc)
+	while(optind < argc)
 	{
-		tr::pod3::file src(argv[optind]);
+		tr::pod3::file src(argv[optind++]);
 		if(extract)
 			for(size_t i = 0; i < src.entries.size(); i++)
 				src[i].extract();
