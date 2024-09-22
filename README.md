@@ -51,10 +51,10 @@ while(optind < argc)
 ```
 
 ## References
-- [crcle](https://github.com/jopadan/crcle)
-- [libzippp](https://github.com/ctabin/libzippp)
+
 - [jtrfp](https://github.com/jtrfp/jtrfp)
 - [podextract](https://github.com/ghoost82/podextract)
+- [Gibbed.Ghostbusters](https://github.com/gibbed/Gibbed.Ghostbusters)
 - [camoto-studio](https://github.com/Malvineous/camoto-studio)
 - [libgamearchive](https://github.com/Malvineous/libgamearchive)
 - [quickbms](https://aluigi.altervista.org/quickbms.htm)
