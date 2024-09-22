@@ -37,12 +37,17 @@ cmake . --install-prefix=/usr && make install
 /* enable audit log output */
 tr::pod::type::audit::visible = true;
 
-/* parse pod file and log to stdout */
-tr::pod3::file src(argv[argc - 1]);
+/* loop through POD3 file arguments */
+while(optind < argc)
+{
+    /* create and parse pod 3 file */
+    tr::pod3::file src(argv[optind++]);
 
-/* extract all entries */
-for(size_t i = 0; i < src.entries.size(); i++)
-		src[i].extract();
+    /* extract all entries */
+    if(extract)
+        for(size_t i = 0; i < src.entries.size(); i++)
+		    src[i].extract();
+}
 ```
 
 ## References
