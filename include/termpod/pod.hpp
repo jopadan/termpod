@@ -546,6 +546,14 @@ namespace tr
 			}
 			struct pod::type::entry& operator[](u32<1> i) { return entries[i]; }
 		};
+		namespace pod5
+		{
+			struct header : tr::pod3::header
+			{
+				c8<80> next_archive;
+			};
+			using entry = pod4::entry;
+		}
 	};
 
 /*
