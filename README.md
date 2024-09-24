@@ -52,6 +52,7 @@ while(optind < argc)
 
 ## References
 
+- [TermPod extractor with old C version of this library](https://github.com/Malte0621/TermPod)
 - [jtrfp](https://github.com/jtrfp/jtrfp)
 - [podextract](https://github.com/ghoost82/podextract)
 - [Gibbed.Ghostbusters](https://github.com/gibbed/Gibbed.Ghostbusters)
