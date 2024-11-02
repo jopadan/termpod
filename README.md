@@ -51,4 +51,4 @@ while(optind < argc)
 ```
 
 ## References
-[Related Software](https://github.com/jopadan/termpod/wiki/Related_Software)
+[Related Software](https://github.com/jopadan/termpod/wiki/Related-Software)
