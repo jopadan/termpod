@@ -51,16 +51,4 @@ while(optind < argc)
 ```
 
 ## References
-
-- [TermPod extractor with old C version of this library](https://github.com/Malte0621/TermPod)
-- [jtrfp](https://github.com/jtrfp/jtrfp)
-- [podextract](https://github.com/ghoost82/podextract)
-- [Poddy](https://github.com/Dummiesman/Poddy)
-- [hxtools - smm/extract_f3pod](https://codeberg.org/jengelh/hxtools)
-- [Gibbed.Ghostbusters](https://github.com/gibbed/Gibbed.Ghostbusters)
-- [tex2dds](https://github.com/KeyofBlueS/tex2dds)
-- [camoto-studio](https://github.com/Malvineous/camoto-studio)
-- [libgamearchive](https://github.com/Malvineous/libgamearchive)
-- [quickbms](https://aluigi.altervista.org/quickbms.htm)
-- [GameExtractor](https://github.com/wattostudios/GameExtractor)
-- [DragonUnPACKer](https://github.com/elbereth/DragonUnPACKer)
+[Related Software](https://github.com/termpod/wiki/Related_Software)
