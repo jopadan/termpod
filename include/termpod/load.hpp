@@ -1,14 +1,12 @@
 #pragma once
-#include <stdtype/stdtype.hpp>
 #include <crcle/crcle.hpp>
 #include <sys/stat.h>
 #include <utime.h>
-#include "libzippp.h"
-
-using namespace libzippp;
 
 namespace tr
 {
+	};
+/*
 	namespace pod
 	{
 			struct entry
@@ -40,60 +38,6 @@ namespace tr
 				}
 			};
 
-			/* audit entry types */
-			namespace audit
-			{
-				enum act : u32<1>
-				{
-					add = 0,
-					rem = 1,
-					chg = 2,
-				};
-				struct entry
-				{
-					c8<32>  user;
-					t32<1>  timestamp;
-					act     action;
-					c8<256> path;
-					t32<1>  old_timestamp;
-					u32<1>  old_size;
-					t32<1>  new_timestamp;
-					u32<1>  new_size;
-				};
-			};
-		};
-
-
-	};
-	using namespace pod;
-	namespace pod3
-	{
-		struct header
-		{
-			c8<4>  ident;
-			u32<1> checksum;
-			c8<80> comment;
-			u32<1> entry_count;
-			u32<1> audit_count;
-			u32<1> revision;
-			u32<1> priority;
-			c8<80> author;
-			c8<80> copyright;
-			u32<1> entry_offset;
-			u32<1> pad10c;
-			u32<1> audit_offset;
-			u32<1> neutral_element;
-			u32<1> inverse_element;
-			u32<1> pad11c;
-		};
-		struct entry
-		{
-			u32<1> path_offset;
-			u32<1> size;
-			u32<1> offset;
-			t32<1> timestamp;
-			u32<1> checksum;
-		};
 		struct file
 		{
 			std::filesystem::path name;
@@ -219,82 +163,6 @@ namespace tr
 			struct pod::type::entry& operator[](u32<1> i) { return entries[i]; }
 		};
 	};
-	namespace pod4
-	{
-		using header = tr::pod3::header;
-		struct entry
-		{
-			u32<1> path_offset;
-			u32<1> compressed_size;
-			u32<1> offset;
-			u32<1> uncompressed_size;
-			u32<1> compression_level;
-			t32<1> timestamp;
-			u32<1> checksum;
-		};
-	};
-	using namespace pod;
-	namespace pod6
-	{
-		struct header
-		{
-			c8<4> ident;
-			u32<1> entry_count;
-			u32<1> version;
-			u32<1> entry_offset;
-			u32<1> path_count;
-		};
-		struct entry
-		{
-			u32<1> path_offset;
-			u32<1> size;
-			u32<1> offset;
-			u32<1> uncompressed;
-			u32<1> compression_level;
-			u32<1> zero;
-		};
-		struct file
-		{
-			struct header header;
-			buf contents;
-			std::vector<struct entry> entries;
-			str paths;
-		};
-	};
-/* TODO implement other formats */
-	namespace epd
-	{
-		struct header
-		{
-			c8<4> ident;
-			c8<256> comment;
-			u32<1> entry_count;
-			u32<1> version;
-			u32<1> checksum;
-		};
-
-		struct entry
-		{
-			c8<64> name;
-			u32<1>  size;
-			u32<1>  offset;
-			u32<1>  timestamp;
-			u32<1>  checksum;
-		};
-	};
-	namespace pod1
-	{
-		struct header
-		{
-			u32<1> entry_count;
-			c8<80> comment;
-		};
-		struct entry
-		{
-			c8<1> name[32];
-			u32<1> size;
-			u32<1> offset;
-		};
 
 		struct file : std::vector<uint8_t>
 		{
@@ -330,26 +198,6 @@ namespace tr
 			}
 		};
 	};
-	namespace pod2
-	{
-		struct header
-		{
-			c8<4>  ident;
-			u32<1> checksum;
-			c8<80> comment;
-			u32<1> entry_count;
-			u32<1> audit_count;
-		};
-
-		struct entry
-		{
-			u32<1> path_offset;
-			u32<1> size;
-			u32<1> offset;
-			t32<1> timestamp;
-			u32<1> checksum;
-		};
-
 		struct file
 		{
 			std::filesystem::path name;
@@ -453,17 +301,8 @@ namespace tr
 			}
 			struct pod::type::entry& operator[](u32<1> i) { return entries[i]; }
 		};
-		namespace pod5
-		{
-			struct header : tr::pod3::header
-			{
-				c8<80> next_archive;
-			};
-			using entry = pod4::entry;
-		}
 	};
 
-/*
 	struct pod : std::vector<uint8_t>
 	{
 
