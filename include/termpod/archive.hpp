@@ -52,27 +52,6 @@ namespace tr::pod
 				return (enum version)i;
 		return pod1;
 	}
-	/* audit types */
-	namespace audit
-	{
-		enum action
-		{
-			add = 0,
-			rem = 1,
-			chg = 2,
-		};
-		struct entry
-		{
-			char              user[32];
-			int32_t          timestamp;
-			enum action         action;
-			char             path[256];
-			int32_t      old_timestamp;
-			uint32_t          old_size;
-			int32_t      new_timestamp;
-			uint32_t          new_size;
-		};
-	};
 	/* string manipulation */
 	namespace string
 	{
@@ -119,6 +98,36 @@ namespace tr::pod
 		{
 			struct stat sb;
 			return stat(filename, &sb) != -1 ? (int32_t)sb.st_mtime : -1;
+		}
+	};
+	/* audit types */
+	namespace audit
+	{
+		bool visible = false;
+		enum class action
+		{
+			add = 0,
+			rem = 1,
+			chg = 2,
+		};
+		struct entry
+		{
+			char              user[32];
+			int32_t          timestamp;
+			enum action         action;
+			char             path[256];
+			int32_t      old_timestamp;
+			uint32_t          old_size;
+			int32_t      new_timestamp;
+			uint32_t          new_size;
+		};
+
+		std::pair<enum action, const char*> str[3] = { { action::add, "          Add" }, { action::rem, "       Remove" }, { action::chg, "       Change" } };
+		const char* print(const struct entry& src)
+		{
+			static char dst[1024] = { '\0' };
+			sprintf(dst, "[AUD] %s %.8X %.8X %s %s\n[AUD] %s %.8X %.8X %13u %s\n[AUD] %s %.8X %.8X %13u %s\n", string::ctime(&src.timestamp), -1, -1, str[(size_t)src.action].second, src.user, string::ctime(&src.old_timestamp), -1, -1, src.old_size, src.path, string::ctime(&src.new_timestamp), -1, -1, src.new_size, src.path);
+			return visible ? (const char*)dst : "";
 		}
 	};
 

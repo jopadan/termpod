@@ -11,91 +11,6 @@ namespace tr
 {
 	namespace pod
 	{
-		namespace string
-		{
-			u32<1> ceil(u32<1> size)
-			{
-				static const std::array<u32<1>,12> sizes = { 4, 8, 12, 16, 32, 48, 64, 80, 96, 128, 256, 264 };
-				std::array<u32<1>,12>::const_iterator dst = sizes.begin();
-				while(size > *dst) dst++;
-				return *dst;
-			}
-			str fgets(u32<1> size, FILE* stream)
-			{
-				if(size == 0)
-					return nullptr;
-
-				str dst = (str)calloc(ceil(size), 1);
-
-				for(u32<1> i = 0; i < size; i++)
-				{
-					dst[i] = fgetc(stream);
-					if(dst[i] == EOF)
-						dst[i] = '\0';
-					if(dst[i] == '\0')
-						break;
-					if(dst[i] == '\\')
-						dst[i] = '/';
-				}
-				if(strlen(dst) == 0)
-				{
-					free(dst);
-					dst = nullptr;
-				}
-				return dst;
-			}
-
-			str ctime(const t32<1>* time)
-			{
-				time_t t = (time_t)*time;
-				str dst = std::ctime(&t);
-				dst[strcspn(dst, "\n")] = '\0';
-				return dst;
-			}
-			t32<1> ftime(const char* filename)
-			{
-				struct stat sb;
-				return stat(filename, &sb) != -1 ? (t32<1>)sb.st_mtime : -1;
-			}
-		};
-		namespace type
-		{
-
-			using cmt     = c8<80>;
-
-			enum version
-			{
-				none = 0,
-				pod1 = 1,
-				pod2 = 2,
-				pod3 = 3,
-				pod4 = 4,
-				pod5 = 5,
-				pod6 = 6,
-				epd  = 7,
-				last = 8,
-			};
-
-			const std::pair<const char*, const char*> ident[last] =
-			{
-				{"NONE", "\0NONE"},
-				{"POD1", "\0POD1"},
-				{"POD2", "POD2\0"},
-				{"POD3", "POD3\0"},
-				{"POD4", "POD4\0"},
-				{"POD5", "POD5\0"},
-				{"POD6", "POD6\0"},
-				{"EPD" , "dtxe\0"}
-			};
-
-			enum version verify(const c8<4> magic)
-			{
-				for(int i = pod2; i < last; i++)
-					if(strncmp(ident[i].second, &magic[0], 4) == 0)
-						return (enum version)i;
-				return pod1;
-			}
-
 			struct entry
 			{
 				str name;
@@ -128,14 +43,12 @@ namespace tr
 			/* audit entry types */
 			namespace audit
 			{
-				bool visible = false;
 				enum act : u32<1>
 				{
 					add = 0,
 					rem = 1,
 					chg = 2,
 				};
-				std::pair<enum act, const char*> str[3] = { { add, "          Add" }, { rem, "       Remove" }, { chg, "       Change" } };
 				struct entry
 				{
 					c8<32>  user;
@@ -147,12 +60,6 @@ namespace tr
 					t32<1>  new_timestamp;
 					u32<1>  new_size;
 				};
-				const char* print(const struct entry& src)
-				{
-					static char dst[1024] = { '\0' };
-					sprintf(dst, "[AUD] %s %.8X %.8X %s %s\n[AUD] %s %.8X %.8X %13u %s\n[AUD] %s %.8X %.8X %13u %s\n", string::ctime(&src.timestamp), -1, -1, str[src.action].second, src.user, string::ctime(&src.old_timestamp), -1, -1, src.old_size, src.path, string::ctime(&src.new_timestamp), -1, -1, src.new_size, src.path);
-					return visible ? (const char*)dst : "";
-				}
 			};
 		};
 
