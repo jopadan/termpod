@@ -15,6 +15,7 @@
 
 namespace tr::pod
 {
+	/* pod version */
 	enum version
 	{
 		none = 0,
@@ -51,7 +52,7 @@ namespace tr::pod
 				return (enum version)i;
 		return pod1;
 	}
-
+	/* audit types */
 	namespace audit
 	{
 		enum action
@@ -72,6 +73,7 @@ namespace tr::pod
 			uint32_t          new_size;
 		};
 	};
+	/* string manipulation */
 	namespace string
 	{
 		uint32_t ceil(uint32_t size)
@@ -120,6 +122,7 @@ namespace tr::pod
 		}
 	};
 
+	/* pod archive types */
 	template<enum version>
 	struct archive
 	{
@@ -290,6 +293,7 @@ namespace tr::pod
 		using entry = archive<pod4>::entry;
 	};
 
+	/* checksum types */
 	enum class section
 	{
 		none   = 0,
