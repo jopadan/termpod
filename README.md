@@ -34,18 +34,20 @@ cmake . --install-prefix=/usr && make install
 
 ```cpp
 /* enable audit log output */
-tr::pod::type::audit::visible = true;
+tr::pod::audit::visible = true;
 
 /* loop through POD3 file arguments */
 while(optind < argc)
 {
-    /* create and parse pod 3 file */
-    tr::pod3::file src(argv[optind++]);
-
     /* extract all entries */
-    if(extract)
-        for(size_t i = 0; i < src.entries.size(); i++)
-		    src[i].extract();
+	while(optind < argc)
+	{
+        /* create and parse pod 3 file */
+		tr::pod::file src(argv[optind++]);
+		if(extract)
+			for(size_t i = 0; i < src.entries.size(); i++)
+				src[i].extract();
+	}
 }
 ```
 
