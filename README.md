@@ -18,8 +18,8 @@ Included as submodule:
 **TODO**
 
 - clean up library interface and add other POD formats
-- identify missing header fields in POD3-6
-- reverse engineer CPod, CPodFile and CDemonPod used in BloodRayne
+- identify extra_header uint32_t field and its use
+- identify dependency data structure of length 264
 - implement compression used in POD4/5
 - update [termpod Wiki](https://github.com/jopadan/termpod/wiki)
 
