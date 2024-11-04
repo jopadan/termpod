@@ -11,7 +11,7 @@ int main(int argc, char** argv)
 	parse_args(argc, argv);
 	while(optind < argc)
 	{
-		tr::pod3::file src(argv[optind++]);
+		tr::pod::file src(argv[optind++]);
 		if(extract)
 			for(size_t i = 0; i < src.entries.size(); i++)
 				src[i].extract();
@@ -29,7 +29,7 @@ void parse_args(int argc, char** argv)
 				extract = true;
 				break;
 			case 'a':
-				tr::pod::type::audit::visible = true;
+				tr::pod::audit::visible = true;
 				break;
 			default:
 				fprintf(stderr, "Usage: %s [-x] [-a] [POD6FILE]\n", argv[0]);

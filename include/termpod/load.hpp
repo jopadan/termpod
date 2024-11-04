@@ -6,163 +6,10 @@
 namespace tr
 {
 	};
-/*
+
 	namespace pod
 	{
-			struct entry
-			{
-				str name;
-				t32<1> timestamp;
-				u32<1> checksum;
-				u32<1> offset;
-				u32<1> size;
-				buf    data;
-				entry() : name(nullptr), timestamp(-1), checksum(-1), size(0), data(nullptr) { }
-				~entry() { free(data); }
-				bool extract(std::filesystem::path dst = ".")
-				{
-						const std::filesystem::path od = dst / name;
-						std::filesystem::create_directories(od.parent_path());
-						FILE* of = fopen(od.c_str(), "wb");
-						if(of == nullptr)
-							return false;
-						size_t written = fwrite(data, size, 1, of);
-						fclose(of);
-						if(written != 1)
-						{
-							fprintf(stderr, "[ERR] extracting %s\n", od.c_str());
-							return false;
-						}
-						struct utimbuf ot = { (time_t)timestamp, (time_t)timestamp };
-						return (utime(od.c_str(), &ot) == 0);
-				}
-			};
 
-		struct file
-		{
-			std::filesystem::path name;
-			u32<1> size;
-			t32<1> timestamp;
-			u32<1> checksum;
-
-			struct header* header;
-
-			std::vector<struct pod::type::entry> entries;
-			std::vector<struct pod::type::audit::entry> audits;
-
-			file() : size(0), checksum(-1), header(nullptr) { }
-			file(std::filesystem::path filename) : name(filename), size(std::filesystem::file_size(filename)), checksum(-1), header(nullptr)
-			{
-				if(verify_file())
-				{
-					header = (struct header*)calloc(sizeof(struct header), 1);
-
-					FILE* fp = fopen(name.c_str(), "rb");
-					if(fread((uint8_t*)header, sizeof(struct header), 1, fp) == 1 && verify_header())
-					{
-						fseek(fp, header->entry_offset, SEEK_SET);
-						struct entry* dict = (struct entry*)calloc(header->entry_count, sizeof(struct entry));
-						if(fread(dict, sizeof(struct entry), header->entry_count,fp) != header->entry_count)
-						{
-							 free(dict);
-							 fprintf(stderr, "[ERR] Could not read entries!\n");
-							 header->entry_count = 0;
-						}
-						long base = ftell(fp);
-						fseek(fp, header->audit_offset, SEEK_CUR);
-						struct pod::type::audit::entry* audit_dict = (pod::type::audit::entry*)calloc(header->audit_count, sizeof(pod::type::audit::entry));
-						if(fread(audit_dict, sizeof(pod::type::audit::entry), header->audit_count, fp) != header->audit_count)
-						{
-							 free(audit_dict);
-							 fprintf(stderr, "[ERR] Could not read audit entries!\n");
-							 header->audit_count = 0;
-						}
-						entries.resize(header->entry_count);
-						for(u32<1> i = 0; i < header->entry_count; i++)
-						{
-							fseek(fp, base + dict[i].path_offset, SEEK_SET);
-							entries[i].name = strdup(pod::string::fgets(256, fp));
-							entries[i].timestamp = dict[i].timestamp;
-							entries[i].checksum  = dict[i].checksum;
-							entries[i].offset    = dict[i].offset;
-							entries[i].size      = dict[i].size;
-							entries[i].data = (uint8_t*)calloc(dict[i].size, 1);
-							fseek(fp, dict[i].offset, SEEK_SET);
-							if(fread(entries[i].data, dict[i].size, 1, fp) != 1)
-							{
-								fprintf(stderr, "[ERR] Could not read entry %u %s of size %u at offset %u!\n", i, entries[i].name, entries[i].size, entries[i].offset);
-								entries[i].size = 0;
-								continue;
-							}
-						}
-						audits.resize(header->audit_count);
-						for(u32<1> i = 0;i < header->audit_count; i++)
-							memcpy(&audits[i], &audit_dict[i], sizeof(struct pod::type::audit::entry));
-						if(dict != nullptr)
-							free(dict);
-						if(audit_dict != nullptr)
-							free(audit_dict);
-					}
-					fclose(fp);
-					if(entries.size() > 0)
-						verify_entries();
-					print();
-				}
-			}
-			void print()
-			{
-				printf("[NFO] %s checksum   offset          size name\n\n", pod::string::ctime(&timestamp));
-				for(u32<1> i = 0; i < entries.size(); i++)
-					printf("[ENT] %s %.8X %.8X %13u %s\n", pod::string::ctime(&entries[i].timestamp), entries[i].checksum, entries[i].offset, entries[i].size, entries[i].name);
-				if(pod::type::audit::visible)
-					for(u32<1> i = 0; i < audits.size(); i++)
-						printf("%s\n", pod::type::audit::print(audits[i]));
-				printf("\n[HDR] %s %.8X %.8X %13zu %s %s %s %s\n", pod::string::ctime(&timestamp), header->checksum, 0, sizeof(struct header), pod::type::ident[pod::type::verify(header->ident)].first, header->comment, header->author, header->copyright);
-				printf("[FLE] %s %.8X %.8X %13u %s\n", pod::string::ctime(&timestamp), checksum, 0, size, name.c_str());
-				printf("[CNT] %s %.8X %.8X %13zu %zu\n", pod::string::ctime(&timestamp), -1, -1, entries.size(), audits.size());
-			}
-			~file() { if(header != nullptr) free(header); }
-			bool verify_file()
-			{
-				checksum = -1;
-				if(std::filesystem::exists(name) && size > 0)
-				{
-					timestamp = pod::string::ftime(name.c_str());
-					FILE* fp = fopen(name.c_str(), "rb");
-					uint8_t* buf = (uint8_t*)calloc(size, 1);
-					if(fread(buf, size, 1, fp) == 1)
-						checksum = crc32::mpeg2::compute(buf, size);
-					fclose(fp);
-					free(buf);
-				}
-				if(checksum == (u32<1>)-1)
-					fprintf(stderr, "[ERR] file %s does not exist or is empty\n", name.c_str());
-				return checksum != (u32<1>)-1;
-			}
-			bool verify_header()
-			{
-				u32<1> chksum = -1;
-				chksum = crc32::mpeg2::compute((uint8_t*)header + 8, sizeof(struct header) - 8);
-				if(chksum != header->checksum)
-					fprintf(stderr, "[ERR] CRC-32/MPEG-2 checksum verification failed for %s\n", name.c_str());
-				return chksum == header->checksum;
-			}
-			bool verify_entries()
-			{
-				for(u32<1> i=0; i < entries.size(); i++)
-				{
-					u32<1> chksum = crc32::mpeg2::compute(entries[i].data, entries[i].size);
-					if(chksum != entries[i].checksum)
-					{
-						fprintf(stderr, "[ERR] CRC-32/MPEG-2 checksum verification failed for %s of size %u in %s\n", entries[i].name, entries[i].size, name.c_str());
-						return false;
-					}
-				}
-				return true;
-			}
-			struct pod::type::entry& operator[](u32<1> i) { return entries[i]; }
-		};
-	};
 
 		struct file : std::vector<uint8_t>
 		{
@@ -225,7 +72,7 @@ namespace tr
 						struct pod::type::audit::entry* audit_dict = (pod::type::audit::entry*)calloc(header->audit_count, sizeof(pod::type::audit::entry));
 						fread(audit_dict, header->audit_count, sizeof(pod::type::audit::entry),fp);
 						entries.resize(header->entry_count);
-						for(u32<1> i = 0; i < header->entry_count; i++)
+						for(uint32_t i = 0; i < header->entry_count; i++)
 						{
 							fseek(fp, base + dict[i].path_offset, SEEK_SET);
 							entries[i].name = pod::string::fgets(256, fp);
@@ -247,7 +94,7 @@ namespace tr
 			}
 			void print()
 			{
-				for(u32<1> i = 0; i < entries.size(); i++)
+				for(uint32_t i = 0; i < entries.size(); i++)
 					printf("[CHK]      %.8X %13u %s\n", entries[i].checksum, entries[i].size, entries[i].name);
 				printf("\n[CHK]      %.8X %13zu %s %s\n", header->checksum, sizeof(struct header), pod::type::ident[pod::type::verify(header->ident)].first, header->comment);
 				printf("[CHK]      %.8X %13u %s\n", checksum, size, name.c_str());
