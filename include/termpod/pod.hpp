@@ -392,7 +392,7 @@ namespace tr::pod
 		{ sizeof(struct archive<pod6>::header)                                          , section::file   },
 		{ sizeof(struct archive<epd>::header)                                           , section::file   },
 		{ sizeof(struct archive<epd1>::header)                                          , section::file   },
-		{ sizeof(archive<epd2>::header)                                          , section::file   },
+		{ sizeof(archive<epd2>::header)                                                 , section::file   },
 	};
 
 	template<enum version version>
@@ -527,7 +527,7 @@ namespace tr::pod
 					printf("%s\n", pod::audit::print(audits[i]));
 			printf("\n[HDR] %s %.8X %.8X %13zu %s %s %s %s\n", pod::string::ctime(&timestamp), hdr->checksum, 0, sizeof(struct pod::archive<pod3>::header), pod::ident[pod::id(hdr->ident)].first, hdr->comment, hdr->author, hdr->copyright);
 			printf("[FLE] %s %.8X %.8X %13u %s\n", pod::string::ctime(&timestamp), checksum, 0, size, name.c_str());
-			printf("[CNT] %s %.8X %.8X %13u %u\n", pod::string::ctime(&timestamp), -1, -1, (uint32_t)entries.size(), hdr->audit_count);
+			printf("[CNT] %s %.8X %.8X %13u %u\n\n\n", pod::string::ctime(&timestamp), -1, -1, (uint32_t)entries.size(), hdr->audit_count);
 		}
 		~file() {  }
 		enum version verify_file()
