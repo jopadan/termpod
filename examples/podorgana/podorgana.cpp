@@ -32,13 +32,13 @@ void parse_args(int argc, char** argv)
 				tr::pod::audit::visible = true;
 				break;
 			default:
-				fprintf(stderr, "Usage: %s [-x] [-a] [POD6FILE]\n", argv[0]);
+				fprintf(stderr, "Usage: %s [-x] [-a] [POD3FILE]\n", argv[0]);
 				exit(EXIT_FAILURE);
 		}
 	}
 	if(optind >= argc)
 	{
-		fprintf(stderr, "Usage: %s [-x] [-a] [POD6FILE]\n", argv[0]);
+		fprintf(stderr, "Usage: %s [-x] [-a] [POD3FILE]\n", argv[0]);
 		exit(EXIT_FAILURE);
 	}
 	printf("\n");

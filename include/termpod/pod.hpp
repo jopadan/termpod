@@ -5,10 +5,7 @@
 #include <cstdio>
 #include <cstring>
 #include <ctime>
-#include <iostream>
 #include <filesystem>
-#include <format>
-#include <chrono>
 #include <utility>
 #include <array>
 #include <vector>
@@ -64,6 +61,31 @@ namespace tr::pod
 			std::array<uint32_t,12>::const_iterator dst = sizes.begin();
 			while(size > *dst) dst++;
 			return *dst;
+		}
+		char* gets(char* buf)
+		{
+			uint32_t size = strnlen(buf, 264);
+			if(size == 0)
+				return nullptr;
+
+			char* dst = (char*)calloc(ceil(size), 1);
+
+			for(uint32_t i = 0; i < size; i++)
+			{
+				dst[i] = buf[i];
+				if(dst[i] == EOF)
+					dst[i] = '\0';
+				if(dst[i] == '\0')
+					break;
+				if(dst[i] == '\\')
+					dst[i] = '/';
+			}
+			if(strlen(dst) == 0)
+			{
+				free(dst);
+				dst = nullptr;
+			}
+			return dst;
 		}
 		char* fgets(uint32_t size, FILE* stream)
 		{
@@ -421,7 +443,7 @@ namespace tr::pod
 		uint32_t     size;
 		uint8_t*     data;
 		entry() : name(nullptr), timestamp(-1), checksum(-1), size(0), data(nullptr) { }
-		~entry() { }
+		~entry() { if(name) free(name); }
 		bool extract(std::filesystem::path dst = ".")
 		{
 			const std::filesystem::path od = dst / name;
@@ -476,7 +498,7 @@ namespace tr::pod
 						audits  = reinterpret_cast<audit::entry*>(&data[hdr->audit_offset()]);
 						for(uint32_t i = 0; i < hdr->entry_count; i++)
 						{
-							entries[i].name      = reinterpret_cast<char*>(&data[hdr->names_offset() + dict[i].names_offset]);
+							entries[i].name      = pod::string::gets(reinterpret_cast<char*>(&data[hdr->names_offset() + dict[i].names_offset]));
 							entries[i].offset    = dict[i].offset;
 							entries[i].timestamp = dict[i].timestamp;
 							entries[i].checksum  = dict[i].checksum;
