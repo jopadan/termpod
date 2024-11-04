@@ -1,5 +1,3 @@
-#include <cstdlib>
-#include <cstdio>
 #include <getopt.h>
 #include <termpod/pod.hpp>
 
