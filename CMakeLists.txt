@@ -30,7 +30,6 @@ set(SOURCE_FILES
 
 set(INCLUDE_FILES
 	external/libzippp/src/libzippp.h
-	external/stdtype/include/stdtype/stdtype.hpp
 	external/crcle/include/crcle/crcle.hpp
 	include/termpod/pod.hpp
 )
@@ -45,7 +44,6 @@ add_subdirectory(external/libzippp)
 include_directories(${PROJECT_NAME} PUBLIC 
                     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
                     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
-                    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/external/stdtype/include>
                     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/external/crcle/include>
                     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/external/libzippp/src>
                     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}>)

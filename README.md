@@ -6,7 +6,6 @@ Single-header C++ library for CRC-32/MPEG-2 checksummed POD{1,2,3,4,5,6}/EPD arc
 Included as submodule:
 
 - [libzippp](http://github.com/ctabin/libzippp)
-- [stdtype](http://github.com/jopadan/stdtype)
 - [crcle](http://github.com/jopadan/crcle)
 
 ## Status
