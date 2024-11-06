@@ -550,7 +550,7 @@ namespace tr::pod
 					if(fread(&data[0], size, 1, fp) == 1)
 					{
 						version = id((const char*)&data[0]);
-						checksum = pod::archive<pod3>::verify(&data[0], size);
+						checksum = crc32::mpeg2::compute(&data[0], size);
 					}
 					fclose(fp);
 				}
