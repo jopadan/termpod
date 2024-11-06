@@ -259,6 +259,14 @@ namespace tr::pod
 	template<>
 	struct archive<pod3>
 	{
+		struct entry
+		{
+			uint32_t      names_offset;
+			uint32_t              size;
+			uint32_t            offset;
+			int32_t          timestamp;
+			uint32_t          checksum;
+		};
 		struct header
 		{
 			/* 0x0000 */ char          ident[4];
@@ -276,27 +284,22 @@ namespace tr::pod
 			/* 0x0114 */ uint32_t depends_count;
 			/* 0x0118 */ uint32_t   depends_crc;
 			/* 0x011c */ uint32_t    audits_crc;
-			constexpr inline uint32_t checksum_offset(          ) { return sizeof(checksum) + sizeof(ident); }
-			constexpr inline uint32_t  entries_offset(          ) { return entry_offset; }
-			constexpr inline uint32_t    names_offset(          ) { return entry_offset + entry_count * sizeof(struct entry); }
-			constexpr inline uint32_t  depends_offset(          ) { return names_size + names_offset(); }
-			constexpr inline uint32_t   audits_offset(          ) { return depends_offset() + depends_count * sizeof(struct depend::entry); }
-			constexpr inline  bool checksum_verify(uint8_t* buf) { return    checksum == crc32::mpeg2::compute(&buf[checksum_offset()], sizeof(struct header) - sizeof(checksum) - sizeof(ident)); } 
-			constexpr inline  bool  entries_verify(uint8_t* buf) { return   entry_crc == crc32::mpeg2::compute(&buf[ entries_offset()],   entry_count * sizeof(struct entry)); }
-			constexpr inline  bool  depends_verify(uint8_t* buf) { return depends_crc == crc32::mpeg2::compute(&buf[ depends_offset()], depends_count * sizeof(struct depend::entry)); }
-			constexpr inline  bool   audits_verify(uint8_t* buf) { return  audits_crc == crc32::mpeg2::compute(&buf[  audits_offset()],   audit_count * sizeof(struct  audit::entry)); }
+			constexpr inline uint32_t checksum_offset(          )  { return sizeof(checksum) + sizeof(ident); }
+			constexpr inline uint32_t  entries_offset(          )  { return entry_offset; }
+			constexpr inline uint32_t    names_offset(          )  { return entry_offset + entry_count * sizeof(struct entry); }
+			constexpr inline uint32_t  depends_offset(          )  { return names_size + names_offset(); }
+			constexpr inline uint32_t   audits_offset(          )  { return depends_offset() + depends_count * sizeof(struct depend::entry); }
+			constexpr inline  bool checksum_verify(uint8_t* buf)   { return    checksum == crc32::mpeg2::compute(&buf[checksum_offset()], sizeof(struct header) - sizeof(checksum) - sizeof(ident)); } 
+			constexpr inline  bool  entries_verify(uint8_t* buf)   { return   entry_crc == crc32::mpeg2::compute(&buf[ entries_offset()],   entry_count * sizeof(struct entry)); }
+			constexpr inline  bool  depends_verify(uint8_t* buf)   { return depends_crc == crc32::mpeg2::compute(&buf[ depends_offset()], depends_count * sizeof(struct depend::entry)); }
+			constexpr inline  bool   audits_verify(uint8_t* buf)   { return  audits_crc == crc32::mpeg2::compute(&buf[  audits_offset()],   audit_count * sizeof(struct  audit::entry)); }
+			constexpr inline struct         entry* entries_begin(uint8_t* buf) { return reinterpret_cast<struct         entry*>(&buf[entries_offset()]); }
+			constexpr inline struct depend::entry* depends_begin(uint8_t* buf) { return reinterpret_cast<struct depend::entry*>(&buf[depends_offset()]); }
+			constexpr inline struct  audit::entry*  audits_begin(uint8_t* buf) { return reinterpret_cast<struct  audit::entry*>(&buf[ audits_offset()]); }
 		};
 		struct extra_header : header
 		{
 			uint32_t            pad120;
-		};
-		struct entry
-		{
-			uint32_t      names_offset;
-			uint32_t              size;
-			uint32_t            offset;
-			int32_t          timestamp;
-			uint32_t          checksum;
 		};
 		constexpr static bool verify(const uint8_t* buf, size_t len)
 		{
@@ -338,7 +341,7 @@ namespace tr::pod
 		struct entry
 		{
 			uint32_t      names_offset;
-			uint32_t   compressed_size;
+			uint32_t              size;
 			uint32_t            offset;
 			uint32_t uncompressed_size;
 			uint32_t compression_level;
@@ -442,11 +445,13 @@ namespace tr::pod
 	/* file entry */
 	struct entry
 	{
-		char*        name;
-		int32_t timestamp;
-		uint32_t checksum;
-		uint32_t   offset;
-		uint32_t     size;
+		char*                 name;
+		int32_t          timestamp;
+		uint32_t          checksum;
+		uint32_t            offset;
+		uint32_t              size;
+		uint32_t uncompressed_size;
+		uint32_t compression_level;
 		uint8_t*     data;
 		entry() : name(nullptr), timestamp(-1), checksum(-1), size(0), data(nullptr) { }
 		~entry() { if(name) free(name); }
@@ -471,6 +476,7 @@ namespace tr::pod
 	struct file
 	{
 		std::filesystem::path name;
+		enum version version = version::none;
 		uint32_t size;
 		uint32_t checksum;
 		int32_t timestamp;
@@ -483,7 +489,8 @@ namespace tr::pod
 		file() : size(0), checksum(-1), hdr(nullptr) { }
 		file(std::filesystem::path filename) : name(filename), size(std::filesystem::file_size(filename)), checksum(-1), hdr(nullptr)
 		{
-			switch(verify_file())
+			version = verify_file();
+			switch(version)
 			{
 				case pod1:
 					break;
@@ -495,6 +502,8 @@ namespace tr::pod
 				case pod6:
 					break;
 				case pod3:
+				case pod4:
+				case pod5:
 					{
 						hdr = reinterpret_cast<archive<pod3>::header*>(&data[0]);
 						entries.resize(hdr->entry_count);
@@ -510,14 +519,14 @@ namespace tr::pod
 							entries[i].timestamp = dict[i].timestamp;
 							entries[i].checksum  = dict[i].checksum;
 							entries[i].size      = dict[i].size;
+							/*
+							entries[i].uncompressed_size = version > pod3 ? dict[i].uncompressed_size : dict[i].size;
+							entries[i].compression_level = version > pod3 ? dict[i].compression_level : 0;
+							*/
 							entries[i].data      = &data[entries[i].offset];
 						}
 						print();
 					}
-					break;
-				case pod4:
-					break;
-				case pod5:
 					break;
 				case none:
 				default:
