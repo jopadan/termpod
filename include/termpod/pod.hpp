@@ -261,24 +261,30 @@ namespace tr::pod
 	{
 		struct header
 		{
-			char              ident[4];
-			uint32_t          checksum;
-			char           comment[80];
-			uint32_t       entry_count;
-			uint32_t       audit_count;
-			uint32_t          revision;
-			uint32_t          priority;
-			char            author[80];
-			char         copyright[80];
-			uint32_t      entry_offset;
-			uint32_t         entry_crc;
-			uint32_t        names_size;
-			uint32_t     depend_count;
-			uint32_t       depend_crc;
-			uint32_t         audit_crc;
-              constexpr inline uint32_t names_offset() { return entry_offset + entry_count * sizeof(struct entry); }
-	      constexpr inline uint32_t depend_offset() { return names_size + names_offset(); }
-	      constexpr inline uint32_t audit_offset() { return depend_offset() + depend_count * sizeof(struct depend::entry); }
+			/* 0x0000 */ char          ident[4];
+			/* 0x0004 */ uint32_t      checksum;
+			/* 0x0008 */ char       comment[80]; 
+			/* 0x0058 */ uint32_t   entry_count;
+			/* 0x005c */ uint32_t   audit_count;
+			/* 0x0060 */ uint32_t      revision;
+			/* 0x0064 */ uint32_t      priority;
+			/* 0x0068 */ char        author[80];
+			/* 0x00B8 */ char     copyright[80];
+			/* 0x0108 */ uint32_t  entry_offset;
+			/* 0x010c */ uint32_t     entry_crc;
+			/* 0x0110 */ uint32_t    names_size;
+			/* 0x0114 */ uint32_t depends_count;
+			/* 0x0118 */ uint32_t   depends_crc;
+			/* 0x011c */ uint32_t    audits_crc;
+			constexpr inline uint32_t checksum_offset(          ) { return sizeof(checksum) + sizeof(ident); }
+			constexpr inline uint32_t  entries_offset(          ) { return entry_offset; }
+			constexpr inline uint32_t    names_offset(          ) { return entry_offset + entry_count * sizeof(struct entry); }
+			constexpr inline uint32_t  depends_offset(          ) { return names_size + names_offset(); }
+			constexpr inline uint32_t   audits_offset(          ) { return depends_offset() + depends_count * sizeof(struct depend::entry); }
+			constexpr inline  bool checksum_verify(uint8_t* buf) { return    checksum == crc32::mpeg2::compute(&buf[checksum_offset()], sizeof(struct header) - sizeof(checksum) - sizeof(ident)); } 
+			constexpr inline  bool  entries_verify(uint8_t* buf) { return   entry_crc == crc32::mpeg2::compute(&buf[ entries_offset()],   entry_count * sizeof(struct entry)); }
+			constexpr inline  bool  depends_verify(uint8_t* buf) { return depends_crc == crc32::mpeg2::compute(&buf[ depends_offset()], depends_count * sizeof(struct depend::entry)); }
+			constexpr inline  bool   audits_verify(uint8_t* buf) { return  audits_crc == crc32::mpeg2::compute(&buf[  audits_offset()],   audit_count * sizeof(struct  audit::entry)); }
 		};
 		struct extra_header : header
 		{
@@ -473,10 +479,9 @@ namespace tr::pod
 
 		archive<pod3>::header* hdr;
 		std::vector<struct pod::entry> entries;
-		depend::entry* depends;
-		audit::entry*  audits;
-		file() : size(0), checksum(-1), hdr(nullptr), depends(nullptr), audits(nullptr) { }
-		file(std::filesystem::path filename) : name(filename), size(std::filesystem::file_size(filename)), checksum(-1), hdr(nullptr), depends(nullptr), audits(nullptr)
+
+		file() : size(0), checksum(-1), hdr(nullptr) { }
+		file(std::filesystem::path filename) : name(filename), size(std::filesystem::file_size(filename)), checksum(-1), hdr(nullptr)
 		{
 			switch(verify_file())
 			{
@@ -494,8 +499,10 @@ namespace tr::pod
 						hdr = reinterpret_cast<archive<pod3>::header*>(&data[0]);
 						entries.resize(hdr->entry_count);
 						archive<pod3>::entry* dict = reinterpret_cast<archive<pod3>::entry*>(&data[hdr->entry_offset]);
-						depends = reinterpret_cast<depend::entry*>(&data[hdr->depend_offset()]);
-						audits  = reinterpret_cast<audit::entry*>(&data[hdr->audit_offset()]);
+
+						if(hdr->checksum_verify(&data[0]) && hdr->entries_verify(&data[0]) && hdr->depends_verify(&data[0]) && hdr->audits_verify(&data[0]))
+							printf("[ERR] POD3/4/5 checksum verification failed for %s!\n", name.c_str());
+
 						for(uint32_t i = 0; i < hdr->entry_count; i++)
 						{
 							entries[i].name      = pod::string::gets(reinterpret_cast<char*>(&data[hdr->names_offset() + dict[i].names_offset]));
@@ -524,7 +531,7 @@ namespace tr::pod
 				printf("[ENT] %s %.8X %.8X %13u %s\n", pod::string::ctime(&entries[i].timestamp), entries[i].checksum, entries[i].offset, entries[i].size, entries[i].name);
 			if(pod::audit::visible)
 				for(uint32_t i = 0; i < hdr->audit_count; i++)
-					printf("%s\n", pod::audit::print(audits[i]));
+					printf("%s\n", pod::audit::print(reinterpret_cast<struct audit::entry*>(&data[hdr->audits_offset()])[i]));
 			printf("\n[HDR] %s %.8X %.8X %13zu %s %s %s %s\n", pod::string::ctime(&timestamp), hdr->checksum, 0, sizeof(struct pod::archive<pod3>::header), pod::ident[pod::id(hdr->ident)].first, hdr->comment, hdr->author, hdr->copyright);
 			printf("[FLE] %s %.8X %.8X %13u %s\n", pod::string::ctime(&timestamp), checksum, 0, size, name.c_str());
 			printf("[CNT] %s %.8X %.8X %13u %u\n\n\n", pod::string::ctime(&timestamp), -1, -1, (uint32_t)entries.size(), hdr->audit_count);
