@@ -534,7 +534,7 @@ namespace tr::pod
 					printf("%s\n", pod::audit::print(reinterpret_cast<struct audit::entry*>(&data[hdr->audits_offset()])[i]));
 			printf("\n[HDR] %s %.8X %.8X %13zu %s %s %s %s\n", pod::string::ctime(&timestamp), hdr->checksum, 0, sizeof(struct pod::archive<pod3>::header), pod::ident[pod::id(hdr->ident)].first, hdr->comment, hdr->author, hdr->copyright);
 			printf("[FLE] %s %.8X %.8X %13u %s\n", pod::string::ctime(&timestamp), checksum, 0, size, name.c_str());
-			printf("[CNT] %s %.8X %.8X %13u %u\n\n\n", pod::string::ctime(&timestamp), -1, -1, (uint32_t)entries.size(), hdr->audit_count);
+			printf("[CNT] %s %.8X %.8X %13u %u %u\n\n\n", pod::string::ctime(&timestamp), -1, -1, hdr->entry_count, hdr->depends_count, hdr->audit_count);
 		}
 		~file() {  }
 		enum version verify_file()
