@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.0...4.0)
 project(termpod LANGUAGES CXX C)
 
 set(PROJECT_VERSION 1.0)
